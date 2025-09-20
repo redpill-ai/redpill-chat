@@ -1,0 +1,4 @@
+export const SIDEBAR_WIDTH = 300
+export const RIGHT_PANEL_WIDTH = 345
+export const LAYOUT_COMPACT_BREAKPOINT = 1023
+export const LAYOUT_COMPACT_MEDIA_QUERY = `(max-width: ${LAYOUT_COMPACT_BREAKPOINT}px)`
