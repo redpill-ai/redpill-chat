@@ -9,15 +9,26 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/openai-compatible": "^1.0.18",
+    "@assistant-ui/react": "^0.11.14",
+    "@assistant-ui/react-ai-sdk": "^1.1.0",
+    "@assistant-ui/react-markdown": "^0.11.0",
+    "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tooltip": "^1.2.8",
     "@tailwindcss/typography": "^0.5.18",
+    "ai": "^5.0.47",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.544.0",
+    "motion": "^12.23.16",
     "next": "15.4.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "tailwind-merge": "^3.3.1"
+    "remark-gfm": "^4.0.1",
+    "tailwind-merge": "^3.3.1",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
