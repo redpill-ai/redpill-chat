@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ThreadList } from "@/components/assistant-ui/thread-list";
 import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
 import { SIDEBAR_WIDTH } from '@/constants'
@@ -122,7 +123,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({ isOpen, onClose }) => {
       </div>
       <div className='mt-6'>
         {isAuthenticated && user ? null : showLoadingState ? null : (
-          <Card>
+          <Card className="mb-6">
             <CardHeader>
               <CardTitle>Welcome back</CardTitle>
               <CardDescription>Sign in to unlock full features and sync your workspace.</CardDescription>
@@ -137,11 +138,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({ isOpen, onClose }) => {
             </CardContent>
           </Card>
         )}
-      </div>
-      <p className='mt-6 leading-relaxed'>Primary navigation placeholder for upcoming chat tools.</p>
-      <div className='mt-4 rounded-md border border-dashed border-border/60 bg-background px-3 py-2 text-xs text-muted-foreground'>
-        <span className='hidden lg:inline'>Collapse this panel with the toggle in the toolbar to mirror tinfoil-chat&apos;s behavior.</span>
-        <span className='lg:hidden'>Tap outside this panel to close it on compact layouts.</span>
+        <ThreadList />
       </div>
     </aside>
   )
