@@ -31,12 +31,15 @@ import {
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
+import { useAssistantBranchHistory } from "@/hooks/use-assistant-branch-history";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LazyMotion, MotionConfig, domAnimation } from "motion/react";
 import * as m from "motion/react-m";
 
 export const Thread: FC = () => {
+  useAssistantBranchHistory();
+
   return (
     <LazyMotion features={domAnimation}>
       <MotionConfig reducedMotion="user">
