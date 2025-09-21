@@ -1,19 +1,92 @@
 'use client'
 
-import { AssistantRuntimeProvider } from '@assistant-ui/react'
-import { useChatRuntime } from '@assistant-ui/react-ai-sdk'
+import {
+  AssistantRuntimeProvider,
+  useLocalRuntime,
+  type ChatModelAdapter,
+  type ChatModelRunResult,
+} from '@assistant-ui/react'
+import { useEffect, useMemo } from 'react'
 
 import { LeftSidebar } from '@/components/left-sidebar'
-import { RightSidebar } from '@/components/right-sidebar'
+import { SettingSidebar } from '@/components/setting-sidebar'
+import { VerifierSidebar } from '@/components/verifier-sidebar'
 import { Header } from '@/components/header'
 import { Thread } from '@/components/assistant-ui/thread'
 import { RIGHT_PANEL_WIDTH, SIDEBAR_WIDTH } from '@/constants'
 import { useChatLayout } from '@/hooks/use-chat-layout'
+import { useChatSettings } from '@/hooks/use-chat-settings'
+import { createOpenAICompatibleAdapter } from '@/lib/openai-compatible-adapter'
+
+function isAsyncIterable<T>(value: unknown): value is AsyncIterable<T> {
+  return typeof value === 'object' && value !== null && Symbol.asyncIterator in value
+}
 
 export default function Home() {
-  const runtime = useChatRuntime({
-    api: '/api/chat',
-  })
+  const messagesInContext = useChatSettings((state) => state.messagesInContext)
+  const responseLanguage = useChatSettings((state) => state.responseLanguage)
+
+  useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_REDPILL_API_KEY) {
+      console.warn('NEXT_PUBLIC_REDPILL_API_KEY is not set; chat requests will fail.')
+    }
+  }, [])
+
+  const baseAdapter = useMemo<ChatModelAdapter>(() => createOpenAICompatibleAdapter(), [])
+
+  const chatModelAdapter = useMemo<ChatModelAdapter>(
+    () => ({
+      async *run(args) {
+        const { messages, context, config, ...rest } = args
+
+        const limitedMessages =
+          typeof messagesInContext === 'number' && messagesInContext > 0 && messages.length > messagesInContext
+            ? messages.slice(-messagesInContext)
+            : messages
+
+        const systemSegments: string[] = []
+        if (typeof context.system === 'string' && context.system.trim().length > 0) {
+          systemSegments.push(context.system.trim())
+        }
+        if (responseLanguage) {
+          systemSegments.push(`Always respond in ${responseLanguage}.`)
+        }
+
+        const systemPrompt = systemSegments.length > 0 ? systemSegments.join('\n\n') : context.system
+
+        const nextContext = {
+          ...context,
+          system: systemPrompt,
+        }
+
+        const nextConfig = {
+          ...config,
+          system: systemPrompt,
+        }
+
+        const result = baseAdapter.run({
+          ...rest,
+          context: nextContext,
+          config: nextConfig,
+          messages: limitedMessages,
+        })
+
+        if (isAsyncIterable<ChatModelRunResult>(result)) {
+          for await (const chunk of result) {
+            yield chunk
+          }
+        } else {
+          const resolved = await result
+          if (resolved) {
+            yield resolved
+          }
+        }
+      },
+    }),
+    [baseAdapter, messagesInContext, responseLanguage],
+  )
+
+  const runtime = useLocalRuntime(chatModelAdapter)
 
   const {
     isCompactLayout,
@@ -60,7 +133,8 @@ export default function Home() {
           <Thread />
         </main>
 
-        <RightSidebar activePanel={activeRightPanel} onClose={closeRightPanel} />
+        <SettingSidebar isVisible={activeRightPanel === 'settings'} onClose={closeRightPanel} />
+        <VerifierSidebar isVisible={activeRightPanel === 'verifier'} onClose={closeRightPanel} />
       </div>
     </AssistantRuntimeProvider>
   )
