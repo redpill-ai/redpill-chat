@@ -1,8 +1,8 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 /**
@@ -41,7 +41,6 @@ export function getModelProviderIcon(providerName: string): string {
       return getGstaticUrl("https://qwenlm.github.io/");
     case "phala":
       return getGstaticUrl("https://phala.network/");
-    case "huggingface":
     default:
       return getGstaticUrl("https://huggingface.co/");
   }

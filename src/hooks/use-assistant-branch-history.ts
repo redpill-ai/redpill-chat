@@ -1,12 +1,12 @@
-import { useAssistantApi } from "@assistant-ui/react";
 import type {
   MessageStatus,
   ThreadAssistantMessage,
   ThreadAssistantMessagePart,
 } from "@assistant-ui/react";
+import { useAssistantApi } from "@assistant-ui/react";
 import { useEffect, useRef } from "react";
 
-const clone = <T,>(value: T): T => {
+const clone = <T>(value: T): T => {
   if (typeof structuredClone === "function") {
     return structuredClone(value);
   }
@@ -103,8 +103,10 @@ export const useAssistantBranchHistory = () => {
             : [];
 
           if (snapshots.length > 0) {
-            const sortedSnapshots = [...snapshots].sort((a, b) =>
-              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+            const sortedSnapshots = [...snapshots].sort(
+              (a, b) =>
+                new Date(a.createdAt).getTime() -
+                new Date(b.createdAt).getTime(),
             );
 
             const repository = thread.export();

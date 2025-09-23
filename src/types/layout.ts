@@ -1,1 +1,1 @@
-export type RightPanel = 'settings' | 'verifier' | null
+export type RightPanel = "settings" | "verifier" | null;

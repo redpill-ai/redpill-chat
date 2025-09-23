@@ -1,29 +1,29 @@
 "use client";
 
-import { PropsWithChildren, useEffect, useState, type FC } from "react";
-import Image from "next/image";
-import { XIcon, PlusIcon, FileText } from "lucide-react";
 import {
   AttachmentPrimitive,
   ComposerPrimitive,
   MessagePrimitive,
-  useAssistantState,
   useAssistantApi,
+  useAssistantState,
 } from "@assistant-ui/react";
+import { FileText, PlusIcon, XIcon } from "lucide-react";
+import Image from "next/image";
+import { type FC, type PropsWithChildren, useEffect, useState } from "react";
 import { useShallow } from "zustand/shallow";
+import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
 import { cn } from "@/lib/utils";
 
 const useFileSrc = (file: File | undefined) => {
@@ -145,9 +145,10 @@ const AttachmentUI: FC = () => {
         return "Document";
       case "file":
         return "File";
-      default:
+      default: {
         const _exhaustiveCheck: never = type;
         throw new Error(`Unknown attachment type: ${_exhaustiveCheck}`);
+      }
     }
   });
 

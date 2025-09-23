@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { useEffect } from 'react'
+import { useEffect } from "react";
 
 import {
   CommandDialog,
@@ -9,51 +9,51 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command'
-import { useChatSettings } from '@/hooks/use-chat-settings'
-import { getModelProviderIcon } from '@/lib/utils'
-import { useModelsStore } from '@/state/models'
+} from "@/components/ui/command";
+import { useChatSettings } from "@/hooks/use-chat-settings";
+import { getModelProviderIcon } from "@/lib/utils";
+import { useModelsStore } from "@/state/models";
 
 interface ModelSelectorProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function ModelSelector({ open, onOpenChange }: ModelSelectorProps) {
-  const model = useChatSettings((state) => state.model)
-  const setModel = useChatSettings((state) => state.setModel)
-  const models = useModelsStore((state) => state.models)
+  const setModel = useChatSettings((state) => state.setModel);
+  const models = useModelsStore((state) => state.models);
 
   useEffect(() => {
-    if (!open) return
+    if (!open) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && open) {
-        onOpenChange(false)
-        e.preventDefault()
-        e.stopPropagation()
+      if (e.key === "Escape" && open) {
+        onOpenChange(false);
+        e.preventDefault();
+        e.stopPropagation();
       }
-    }
+    };
 
-    document.addEventListener('keydown', handleKeyDown, true)
-    return () => document.removeEventListener('keydown', handleKeyDown, true)
-  }, [open, onOpenChange])
+    document.addEventListener("keydown", handleKeyDown, true);
+    return () => document.removeEventListener("keydown", handleKeyDown, true);
+  }, [open, onOpenChange]);
 
   const modelOptions = models.map((m) => {
-    const providerFromName = m.name.split(':')[0]?.trim() || m.providers[0] || 'unknown'
-    
+    const providerFromName =
+      m.name.split(":")[0]?.trim() || m.providers[0] || "unknown";
+
     return {
       value: m.id,
       label: m.name,
       provider: providerFromName,
       iconUrl: getModelProviderIcon(providerFromName),
-    }
-  })
+    };
+  });
 
   const handleModelSelect = (value: string) => {
-    setModel(value)
-    onOpenChange(false)
-  }
+    setModel(value);
+    onOpenChange(false);
+  };
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
@@ -69,9 +69,10 @@ export function ModelSelector({ open, onOpenChange }: ModelSelectorProps) {
             >
               <div className="flex items-center gap-3 w-full">
                 <div className="size-5 flex items-center justify-center rounded overflow-hidden bg-white border flex-shrink-0">
-                  <img 
-                    src={option.iconUrl} 
-                    alt={option.provider} 
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={option.iconUrl}
+                    alt={option.provider}
                     className="size-4 object-contain"
                   />
                 </div>
@@ -82,5 +83,5 @@ export function ModelSelector({ open, onOpenChange }: ModelSelectorProps) {
         </CommandGroup>
       </CommandList>
     </CommandDialog>
-  )
+  );
 }

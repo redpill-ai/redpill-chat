@@ -4,12 +4,14 @@ import {
   ComposerPrimitive,
   ErrorPrimitive,
   MessagePrimitive,
-  ThreadPrimitive,
   type ReasoningMessagePartComponent,
+  ThreadPrimitive,
+  useMessage,
 } from "@assistant-ui/react";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  Brain,
   CheckIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
@@ -17,26 +19,24 @@ import {
   CopyIcon,
   PencilIcon,
   RefreshCwIcon,
-  Sparkles,
   Square,
 } from "lucide-react";
+import { domAnimation, LazyMotion, MotionConfig } from "motion/react";
+import * as m from "motion/react-m";
 import type { FC } from "react";
-import { useState } from "react";
-
+import { useEffect, useRef, useState } from "react";
 import {
   ComposerAddAttachment,
   ComposerAttachments,
   UserMessageAttachments,
 } from "@/components/assistant-ui/attachment";
+import { ComposerControls } from "@/components/assistant-ui/composer-controls";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
-import { useAssistantBranchHistory } from "@/hooks/use-assistant-branch-history";
-import { ComposerControls } from "@/components/assistant-ui/composer-controls";
 import { Button } from "@/components/ui/button";
+import { useAssistantBranchHistory } from "@/hooks/use-assistant-branch-history";
 import { cn } from "@/lib/utils";
-import { LazyMotion, MotionConfig, domAnimation } from "motion/react";
-import * as m from "motion/react-m";
 
 export const Thread: FC = () => {
   useAssistantBranchHistory();
@@ -300,42 +300,92 @@ const AssistantActionBar: FC = () => {
 
 const AssistantReasoning: ReasoningMessagePartComponent = ({ text }) => {
   const trimmed = text?.trim() ?? "";
-
   const [isExpanded, setIsExpanded] = useState(true);
+  const [thinkingDuration, setThinkingDuration] = useState<
+    number | undefined
+  >();
 
-  if (!trimmed) {
-    return null;
-  }
+  const message = useMessage((m) => m);
+  const thinkingStartTimeRef = useRef<number | undefined>(undefined);
+
+  // Track thinking state: starts when reasoning appears, ends when text content appears
+  useEffect(() => {
+    const hasReasoningText = Boolean(trimmed);
+    const hasTextContent =
+      message.content?.some((part) => part.type === "text") ?? false;
+
+    // Start timing when reasoning first appears
+    if (hasReasoningText && !thinkingStartTimeRef.current) {
+      thinkingStartTimeRef.current = Date.now();
+    }
+
+    // Calculate duration when text content appears (reasoning -> text transition)
+    if (
+      hasReasoningText &&
+      hasTextContent &&
+      thinkingStartTimeRef.current &&
+      !thinkingDuration
+    ) {
+      const duration = (Date.now() - thinkingStartTimeRef.current) / 1000;
+      setThinkingDuration(duration);
+    }
+  }, [trimmed, message.content, thinkingDuration]);
+
+  const formatDuration = (seconds: number): string => {
+    if (seconds < 1) return `${Math.round(seconds * 1000)}ms`;
+    if (seconds < 60) return `${seconds.toFixed(1)}s`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.round(seconds % 60);
+    return `${minutes}m ${remainingSeconds}s`;
+  };
+
+  if (!trimmed) return null;
+
+  const isThinking = Boolean(trimmed) && !thinkingDuration;
 
   return (
     <div className="aui-assistant-reasoning mb-5 w-full rounded-xl border border-border/60 bg-muted/40">
-      <div className="aui-assistant-reasoning-header flex items-center gap-2 px-3 py-2">
-        <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          <Sparkles className="size-3 text-primary" aria-hidden />
-          Reasoning
-        </span>
-        <div className="ml-auto" />
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-expanded={isExpanded}
-          aria-label={isExpanded ? "Collapse reasoning details" : "Expand reasoning details"}
-          className="size-8"
-          onClick={() => setIsExpanded((previous) => !previous)}
-        >
-          <ChevronDownIcon
-            className={cn(
-              "size-4 transition-transform duration-200",
-              isExpanded ? "rotate-180" : "rotate-0",
+      <button
+        type="button"
+        onClick={() => setIsExpanded((prev) => !prev)}
+        className="flex w-full items-center justify-between px-3 py-2 text-left hover:bg-muted/60 transition-colors rounded-t-xl"
+        aria-expanded={isExpanded}
+        aria-label={
+          isExpanded ? "Collapse reasoning details" : "Expand reasoning details"
+        }
+      >
+        <div className="flex items-center gap-2">
+          <Brain className="size-4 text-primary" aria-hidden />
+          <span className="text-sm text-muted-foreground">
+            <span className="font-semibold">
+              {isThinking ? "Thinking" : "Thought"}
+            </span>
+            {thinkingDuration && (
+              <span className="font-normal opacity-70 ml-1">
+                for {formatDuration(thinkingDuration)}
+              </span>
             )}
-          />
-        </Button>
-      </div>
-      {isExpanded ? (
+          </span>
+          {isThinking && (
+            <div className="inline-flex items-center space-x-1 ml-1">
+              <div className="h-1 w-1 bg-muted-foreground/60 animate-bounce rounded-full [animation-delay:0ms]" />
+              <div className="h-1 w-1 bg-muted-foreground/60 animate-bounce rounded-full [animation-delay:150ms]" />
+              <div className="h-1 w-1 bg-muted-foreground/60 animate-bounce rounded-full [animation-delay:300ms]" />
+            </div>
+          )}
+        </div>
+        <ChevronDownIcon
+          className={cn(
+            "size-4 transition-transform duration-200 text-muted-foreground",
+            isExpanded ? "rotate-180" : "rotate-0",
+          )}
+        />
+      </button>
+      {isExpanded && (
         <div className="aui-assistant-reasoning-body border-t border-border/60 px-4 py-3 font-mono text-xs leading-6 text-muted-foreground whitespace-pre-wrap">
           {trimmed}
         </div>
-      ) : null}
+      )}
     </div>
   );
 };
