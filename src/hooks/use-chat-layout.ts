@@ -1,12 +1,69 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect } from 'react'
+import { create } from 'zustand'
 
 import { LAYOUT_COMPACT_MEDIA_QUERY } from '@/constants'
 import type { RightPanel } from '@/types/layout'
 
+interface ChatLayoutState {
+  isSidebarOpen: boolean
+  activeRightPanel: RightPanel
+  isCompactLayout: boolean
+  
+  setIsSidebarOpen: (open: boolean) => void
+  setActiveRightPanel: (panel: RightPanel) => void
+  setIsCompactLayout: (compact: boolean) => void
+  toggleSidebar: () => void
+  toggleRightPanel: (panel: Exclude<RightPanel, null>) => void
+}
+
+const useChatLayoutStore = create<ChatLayoutState>((set, get) => ({
+  isSidebarOpen: false,
+  activeRightPanel: null,
+  isCompactLayout: false,
+  
+  setIsSidebarOpen: (open) => set({ isSidebarOpen: open }),
+  setActiveRightPanel: (panel) => set({ activeRightPanel: panel }),
+  setIsCompactLayout: (compact) => set({ isCompactLayout: compact }),
+  
+  toggleSidebar: () => {
+    const state = get()
+    const next = !state.isSidebarOpen
+    
+    if (next && state.isCompactLayout && state.activeRightPanel !== null) {
+      set({ isSidebarOpen: next, activeRightPanel: null })
+    } else {
+      set({ isSidebarOpen: next })
+    }
+  },
+  
+  toggleRightPanel: (panel) => {
+    const state = get()
+    
+    if (state.activeRightPanel === panel) {
+      set({ activeRightPanel: null })
+      return
+    }
+    
+    if (state.isCompactLayout) {
+      set({ activeRightPanel: panel, isSidebarOpen: false })
+    } else {
+      set({ activeRightPanel: panel })
+    }
+  },
+}))
+
 export function useChatLayout() {
-  const [isCompactLayout, setIsCompactLayout] = useState(false)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [activeRightPanel, setActiveRightPanel] = useState<RightPanel>(null)
+  const isSidebarOpen = useChatLayoutStore((state) => state.isSidebarOpen)
+  const activeRightPanel = useChatLayoutStore((state) => state.activeRightPanel)
+  const isCompactLayout = useChatLayoutStore((state) => state.isCompactLayout)
+  const setIsSidebarOpen = useChatLayoutStore((state) => state.setIsSidebarOpen)
+  const setIsCompactLayout = useChatLayoutStore((state) => state.setIsCompactLayout)
+  const toggleSidebar = useChatLayoutStore((state) => state.toggleSidebar)
+  const toggleRightPanel = useChatLayoutStore((state) => state.toggleRightPanel)
+  
+  // Computed values
+  const isRightPanelVisible = activeRightPanel !== null
+  const shouldShowOverlay = isCompactLayout && (isSidebarOpen || isRightPanelVisible)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -31,45 +88,9 @@ export function useChatLayout() {
         mediaQuery.removeListener(listener)
       }
     }
-  }, [])
+  }, [setIsCompactLayout])
 
-  const isRightPanelVisible = activeRightPanel !== null
-
-  const shouldShowOverlay = useMemo(
-    () => isCompactLayout && (isSidebarOpen || isRightPanelVisible),
-    [isCompactLayout, isRightPanelVisible, isSidebarOpen],
-  )
-
-  const toggleSidebar = useCallback(() => {
-    setIsSidebarOpen((previous) => {
-      const next = !previous
-      if (next && isCompactLayout && isRightPanelVisible) {
-        setActiveRightPanel(null)
-      }
-      return next
-    })
-  }, [isCompactLayout, isRightPanelVisible])
-
-  const toggleRightPanel = useCallback(
-    (panel: Exclude<RightPanel, null>) => {
-      setActiveRightPanel((previous) => {
-        if (previous === panel) {
-          return null
-        }
-
-        if (isCompactLayout) {
-          setIsSidebarOpen(false)
-        }
-
-        return panel
-      })
-    },
-    [isCompactLayout],
-  )
-
-  const closeRightPanel = useCallback(() => {
-    setActiveRightPanel(null)
-  }, [])
+  const closeRightPanel = () => useChatLayoutStore.getState().setActiveRightPanel(null)
 
   return {
     isCompactLayout,

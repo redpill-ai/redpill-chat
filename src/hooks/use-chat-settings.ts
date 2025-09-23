@@ -7,9 +7,11 @@ interface ChatSettingsState {
   theme: ThemeOption
   messagesInContext: number
   responseLanguage: string
+  model: string
   setTheme: (theme: ThemeOption) => void
   setMessagesInContext: (count: number) => void
   setResponseLanguage: (language: string) => void
+  setModel: (model: string) => void
 }
 
 const fallbackStorage: Storage = {
@@ -27,10 +29,12 @@ export const useChatSettings = create<ChatSettingsState>()(
       theme: 'light',
       messagesInContext: 15,
       responseLanguage: 'English',
+      model: '',
       setTheme: (theme) => set({ theme }),
       setMessagesInContext: (count) =>
         set({ messagesInContext: Math.min(Math.max(count, 1), 50) }),
       setResponseLanguage: (language) => set({ responseLanguage: language }),
+      setModel: (model) => set({ model }),
     }),
     {
       name: 'redpill-chat-settings',
