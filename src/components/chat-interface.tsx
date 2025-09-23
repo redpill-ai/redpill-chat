@@ -18,6 +18,7 @@ import { useChatSettings } from "@/hooks/use-chat-settings";
 import { createOpenAICompatibleAdapter } from "@/lib/openai-compatible-adapter";
 import { useModelsStore } from "@/state/models";
 import type { Model } from "@/types/model";
+import { env } from "@/env";
 
 function isAsyncIterable<T>(value: unknown): value is AsyncIterable<T> {
   return (
@@ -40,7 +41,7 @@ export function ChatInterface({ models }: ChatInterfaceProps) {
   }, [models, setModels]);
 
   useEffect(() => {
-    if (!process.env.NEXT_PUBLIC_REDPILL_API_KEY) {
+    if (!env.NEXT_PUBLIC_REDPILL_API_KEY) {
       console.warn(
         "NEXT_PUBLIC_REDPILL_API_KEY is not set; chat requests will fail.",
       );

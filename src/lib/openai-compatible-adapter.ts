@@ -4,8 +4,7 @@ import type {
   ThreadAssistantMessagePart,
   ThreadMessage,
 } from "@assistant-ui/react";
-
-const DEFAULT_ENDPOINT = "https://api.redpill.ai/v1/chat/completions";
+import { env } from "@/env";
 
 enum Role {
   System = "system",
@@ -169,8 +168,8 @@ export interface CreateOpenAICompatibleAdapterOptions {
 }
 
 export function createOpenAICompatibleAdapter({
-  apiKey = process.env.NEXT_PUBLIC_REDPILL_API_KEY ?? "",
-  endpoint = DEFAULT_ENDPOINT,
+  apiKey = env.NEXT_PUBLIC_REDPILL_API_KEY ?? "",
+  endpoint = `${env.NEXT_PUBLIC_REDPILL_API_URL}/v1/chat/completions`,
   model,
 }: CreateOpenAICompatibleAdapterOptions = {}): ChatModelAdapter {
   return {

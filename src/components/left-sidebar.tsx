@@ -4,6 +4,7 @@ import { LogOut, UserRound, X } from "lucide-react";
 import Image from "next/image";
 import type { FC } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { env } from "@/env";
 import { ThreadList } from "@/components/assistant-ui/thread-list";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -50,7 +51,7 @@ const normalizeUrl = (url: string | undefined) => {
 export const LeftSidebar: FC<LeftSidebarProps> = ({ isOpen, onClose }) => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
 
-  const baseWebUrl = normalizeUrl(process.env.NEXT_PUBLIC_WEB_URL);
+  const baseWebUrl = normalizeUrl(env.NEXT_PUBLIC_WEB_URL);
   const loginBaseHref = baseWebUrl ? `${baseWebUrl}/login` : "/login";
   const [loginHref, setLoginHref] = useState(loginBaseHref);
 

@@ -1,9 +1,10 @@
 import { ChatInterface } from "@/components/chat-interface";
 import type { Model } from "@/types/model";
+import { env } from "@/env";
 
 async function getModels(): Promise<Model[]> {
   try {
-    const apiUrl = process.env.API_URL;
+    const apiUrl = env.API_URL;
     if (!apiUrl) {
       console.warn("API_URL environment variable is not set");
       return [];

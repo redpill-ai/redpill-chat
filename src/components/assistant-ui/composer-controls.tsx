@@ -1,13 +1,20 @@
 "use client";
 
-import { ChevronDownIcon, ShieldCheckIcon, Sparkles } from "lucide-react";
+import {
+  ChevronDownIcon,
+  ShieldCheckIcon,
+  Sparkles,
+  RefreshCw,
+  AlertCircle,
+} from "lucide-react";
 import type { FC } from "react";
 import { useEffect, useState } from "react";
 import { ModelSelector } from "@/components/model-selector";
 import { Button } from "@/components/ui/button";
 import { useChatLayout } from "@/hooks/use-chat-layout";
 import { useChatSettings } from "@/hooks/use-chat-settings";
-import { getModelProviderIcon } from "@/lib/utils";
+import { useAttestation } from "@/hooks/use-attestation";
+import { getModelProviderIcon, cn } from "@/lib/utils";
 import { useModelsStore } from "@/state/models";
 
 export const ComposerControls: FC = () => {
@@ -16,6 +23,10 @@ export const ComposerControls: FC = () => {
   const { toggleRightPanel } = useChatLayout();
   const models = useModelsStore((state) => state.models);
   const [isModelDialogOpen, setIsModelDialogOpen] = useState(false);
+
+  // Add attestation functionality
+  const { isVerifying, isVerified, verifyAttestation, error } =
+    useAttestation();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -28,6 +39,13 @@ export const ComposerControls: FC = () => {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isModelDialogOpen]);
+
+  // Auto-verify when model changes
+  useEffect(() => {
+    if (model) {
+      verifyAttestation(model);
+    }
+  }, [model, verifyAttestation]);
 
   const modelOptions = models.map((m) => {
     // Extract provider from model name (e.g., "Meta: Llama 3.3 70B Instruct" -> "Meta")
@@ -50,6 +68,48 @@ export const ComposerControls: FC = () => {
   if (!model && modelOptions.length > 0) {
     setModel(modelOptions[0].value);
   }
+
+  // Get verification button state
+  const getVerificationState = () => {
+    if (isVerifying) {
+      return {
+        icon: RefreshCw,
+        text: "Verifying privacy...",
+        className: "border-border text-muted-foreground",
+        iconClass: "animate-spin",
+      };
+    }
+
+    if (error) {
+      return {
+        icon: AlertCircle,
+        text: "Privacy unverified",
+        className:
+          "bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:text-red-800",
+        iconClass: "",
+      };
+    }
+
+    if (isVerified) {
+      return {
+        icon: ShieldCheckIcon,
+        text: "Chat is private",
+        className:
+          "bg-green-50 border-green-200 text-green-800 hover:bg-green-100 hover:text-green-900",
+        iconClass: "",
+      };
+    }
+
+    // Default state
+    return {
+      icon: ShieldCheckIcon,
+      text: "Chat is private",
+      className: "",
+      iconClass: "",
+    };
+  };
+
+  const verificationState = getVerificationState();
 
   return (
     <>
@@ -92,12 +152,20 @@ export const ComposerControls: FC = () => {
           type="button"
           variant="outline"
           size="sm"
-          className="aui-composer-verifier-trigger inline-flex items-center gap-2 rounded-full"
+          className={cn(
+            "aui-composer-verifier-trigger inline-flex items-center gap-2 rounded-full",
+            verificationState.className,
+          )}
           onClick={() => toggleRightPanel("verifier")}
           aria-label="Open verifier sidebar"
         >
-          <ShieldCheckIcon className="size-4 text-primary" aria-hidden />
-          <span className="text-sm font-semibold">Chat is private</span>
+          <verificationState.icon
+            className={cn("size-4", verificationState.iconClass)}
+            aria-hidden
+          />
+          <span className="text-sm font-semibold">
+            {verificationState.text}
+          </span>
         </Button>
       </div>
 
