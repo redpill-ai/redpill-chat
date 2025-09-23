@@ -263,6 +263,7 @@ export function createOpenAICompatibleAdapter({
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder("utf-8");
+      let messageId = "";
       let buffer = "";
       let textBuffer = "";
       let reasoningBuffer = "";
@@ -282,6 +283,7 @@ export function createOpenAICompatibleAdapter({
 
         try {
           const parsed = JSON.parse(payload);
+          messageId = parsed?.id;
           const choice = parsed?.choices?.[0];
           if (!choice) {
             return { updated: false, done: false };
@@ -385,6 +387,11 @@ export function createOpenAICompatibleAdapter({
       yield {
         content: createAssistantParts(textBuffer, reasoningBuffer),
         status: mapFinishReason(finishReason ?? "stop"),
+        metadata: {
+          custom: {
+            messageId,
+          },
+        },
       };
     },
   };

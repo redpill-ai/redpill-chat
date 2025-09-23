@@ -104,7 +104,7 @@ const AttestationCard: FC<AttestationCardProps> = ({
               return (
                 <div key={fieldId} className="flex flex-col gap-2">
                   <span className="text-muted-foreground font-medium text-xs sm:text-sm">
-                    {key}:
+                    {key}
                   </span>
                   <div className="relative">
                     <pre className="text-foreground font-mono text-xs break-all bg-muted p-3 rounded overflow-y-auto max-h-[100px] sm:max-h-[120px] whitespace-pre-wrap">

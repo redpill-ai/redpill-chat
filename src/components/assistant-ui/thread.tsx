@@ -7,6 +7,7 @@ import {
   type ReasoningMessagePartComponent,
   ThreadPrimitive,
   useMessage,
+  type ThreadMessage,
 } from "@assistant-ui/react";
 import {
   ArrowDownIcon,
@@ -19,6 +20,7 @@ import {
   CopyIcon,
   PencilIcon,
   RefreshCwIcon,
+  ShieldCheck,
   Square,
 } from "lucide-react";
 import { domAnimation, LazyMotion, MotionConfig } from "motion/react";
@@ -35,7 +37,18 @@ import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
 import { Button } from "@/components/ui/button";
+import { MessageVerificationDialog } from "@/components/message-verification-dialog";
 import { useAssistantBranchHistory } from "@/hooks/use-assistant-branch-history";
+import { useMessageVerification } from "@/hooks/use-message-verification";
+import { useMessageVerificationStore } from "@/state/message-verification";
+
+interface MessageWithCustomMetadata {
+  metadata?: {
+    custom?: {
+      messageId?: string;
+    };
+  };
+}
 import { cn } from "@/lib/utils";
 
 export const Thread: FC = () => {
@@ -272,29 +285,82 @@ const AssistantMessage: FC = () => {
 };
 
 const AssistantActionBar: FC = () => {
+  const message = useMessage((m) => m);
+  const { verifyMessage } = useMessageVerification();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const messageId = (message as ThreadMessage & MessageWithCustomMetadata)
+    ?.metadata?.custom?.messageId;
+  const verificationState = useMessageVerificationStore((state) =>
+    messageId ? state.verifications.get(messageId) : undefined,
+  );
+
+  const { isVerifying, signatureData, error } = verificationState || {
+    isVerifying: false,
+    signatureData: null,
+    error: null,
+  };
+
+  useEffect(() => {
+    const isComplete = message.status?.type === "complete";
+    const hasNoVerificationAttempt = !verificationState;
+
+    if (isComplete && messageId && hasNoVerificationAttempt) {
+      verifyMessage(messageId);
+    }
+  }, [message.status?.type, messageId, verificationState, verifyMessage]);
+
   return (
-    <ActionBarPrimitive.Root
-      hideWhenRunning
-      autohide="not-last"
-      autohideFloat="single-branch"
-      className="aui-assistant-action-bar-root col-start-3 row-start-2 -ml-1 flex gap-1 text-muted-foreground data-floating:absolute data-floating:rounded-md data-floating:border data-floating:bg-background data-floating:p-1 data-floating:shadow-sm"
-    >
-      <ActionBarPrimitive.Copy asChild>
-        <TooltipIconButton tooltip="Copy">
-          <MessagePrimitive.If copied>
-            <CheckIcon />
-          </MessagePrimitive.If>
-          <MessagePrimitive.If copied={false}>
-            <CopyIcon />
-          </MessagePrimitive.If>
-        </TooltipIconButton>
-      </ActionBarPrimitive.Copy>
-      <ActionBarPrimitive.Reload asChild>
-        <TooltipIconButton tooltip="Refresh">
-          <RefreshCwIcon />
-        </TooltipIconButton>
-      </ActionBarPrimitive.Reload>
-    </ActionBarPrimitive.Root>
+    <>
+      <ActionBarPrimitive.Root
+        hideWhenRunning
+        autohide="not-last"
+        autohideFloat="single-branch"
+        className="aui-assistant-action-bar-root col-start-3 row-start-2 -ml-1 flex gap-1 text-muted-foreground data-floating:absolute data-floating:rounded-md data-floating:border data-floating:bg-background data-floating:p-1 data-floating:shadow-sm"
+      >
+        <ActionBarPrimitive.Copy asChild>
+          <TooltipIconButton tooltip="Copy">
+            <MessagePrimitive.If copied>
+              <CheckIcon />
+            </MessagePrimitive.If>
+            <MessagePrimitive.If copied={false}>
+              <CopyIcon />
+            </MessagePrimitive.If>
+          </TooltipIconButton>
+        </ActionBarPrimitive.Copy>
+        <ActionBarPrimitive.Reload asChild>
+          <TooltipIconButton tooltip="Refresh">
+            <RefreshCwIcon />
+          </TooltipIconButton>
+        </ActionBarPrimitive.Reload>
+        {messageId && (
+          <TooltipIconButton
+            tooltip={
+              isVerifying
+                ? "Verifying message"
+                : signatureData && !error
+                  ? "Message verified"
+                  : error
+                    ? "Message verification failed"
+                    : "Verify message"
+            }
+            onClick={() => setIsDialogOpen(true)}
+            className={cn(
+              isVerifying && "animate-spin",
+              signatureData && !error && "text-green-600",
+            )}
+          >
+            {isVerifying ? <RefreshCwIcon /> : <ShieldCheck />}
+          </TooltipIconButton>
+        )}
+      </ActionBarPrimitive.Root>
+
+      <MessageVerificationDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        messageId={messageId || null}
+      />
+    </>
   );
 };
 
