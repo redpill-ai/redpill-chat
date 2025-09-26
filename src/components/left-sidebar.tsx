@@ -141,7 +141,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({ isOpen, onClose }) => {
           className="flex items-center gap-2"
         >
           <Image
-            src="/logo-full.svg"
+            src="/logo-horizontal-primary.svg"
             alt="Redpill"
             width={120}
             height={32}

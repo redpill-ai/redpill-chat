@@ -39,6 +39,7 @@
   --sidebar-ring: #b5b5b5;
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-display: "Poppins", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
@@ -95,6 +96,7 @@
   --sidebar-ring: #b5b5b5;
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-display: "Poppins", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
@@ -149,6 +151,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
 
@@ -178,6 +181,10 @@
   }
 }
 
+@utility font-display {
+  font-family: var(--font-display);
+}
+
 @layer base {
   *,
   ::after,
@@ -194,8 +201,15 @@
   }
 
   body {
-    @apply bg-background text-foreground min-h-svh w-full;
-    font-family: Arial, Helvetica, sans-serif;
+    @apply bg-background text-foreground min-h-svh w-full font-sans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+
+  button, [role="button"] {
+    font-family: var(--font-display);
   }
 
   button:not(:disabled),
