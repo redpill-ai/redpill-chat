@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "@fontsource/poppins";
 import "./globals.css";
 
-
 export const metadata: Metadata = {
   title: {
     default: "RedPill - Confidential AI",

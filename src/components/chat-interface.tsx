@@ -19,6 +19,7 @@ import { createOpenAICompatibleAdapter } from "@/lib/openai-compatible-adapter";
 import { useModelsStore } from "@/state/models";
 import type { Model } from "@/types/model";
 import { env } from "@/env";
+import { UrlHashMessageHandler } from "@/components/url-hash-message-handler";
 
 function isAsyncIterable<T>(value: unknown): value is AsyncIterable<T> {
   return (
@@ -129,6 +130,7 @@ export function ChatInterface({ models }: ChatInterfaceProps) {
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
+      <UrlHashMessageHandler />
       <div className="relative flex h-screen overflow-hidden bg-background text-foreground">
         {shouldShowOverlay ? (
           <div
