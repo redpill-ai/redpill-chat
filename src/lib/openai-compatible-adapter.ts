@@ -168,7 +168,7 @@ export interface CreateOpenAICompatibleAdapterOptions {
 }
 
 export function createOpenAICompatibleAdapter({
-  apiKey = env.NEXT_PUBLIC_REDPILL_API_KEY ?? "",
+  apiKey = "",
   endpoint = `${env.NEXT_PUBLIC_REDPILL_API_URL}/v1/chat/completions`,
   model,
 }: CreateOpenAICompatibleAdapterOptions = {}): ChatModelAdapter {
@@ -232,9 +232,7 @@ export function createOpenAICompatibleAdapter({
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(
-          `OpenAI-compatible API error: ${response.status} ${errorText}`,
-        );
+        throw new Error(`API error: ${response.status} ${errorText}`);
       }
 
       if (!response.body) {

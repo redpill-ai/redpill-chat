@@ -15,10 +15,10 @@ import { VerifierSidebar } from "@/components/verifier-sidebar";
 import { RIGHT_PANEL_WIDTH, SIDEBAR_WIDTH } from "@/constants";
 import { useChatLayout } from "@/hooks/use-chat-layout";
 import { useChatSettings } from "@/hooks/use-chat-settings";
+import { useChatKey } from "@/hooks/use-chat-key";
 import { createOpenAICompatibleAdapter } from "@/lib/openai-compatible-adapter";
 import { useModelsStore } from "@/state/models";
 import type { Model } from "@/types/model";
-import { env } from "@/env";
 import { UrlHashMessageHandler } from "@/components/url-hash-message-handler";
 
 function isAsyncIterable<T>(value: unknown): value is AsyncIterable<T> {
@@ -36,23 +36,19 @@ export function ChatInterface({ models }: ChatInterfaceProps) {
   const responseLanguage = useChatSettings((state) => state.responseLanguage);
   const model = useChatSettings((state) => state.model);
   const setModels = useModelsStore((state) => state.setModels);
+  const { chatKey, isAuthenticated } = useChatKey();
 
   useEffect(() => {
     setModels(models);
   }, [models, setModels]);
 
-  useEffect(() => {
-    if (!env.NEXT_PUBLIC_REDPILL_API_KEY) {
-      console.warn(
-        "NEXT_PUBLIC_REDPILL_API_KEY is not set; chat requests will fail.",
-      );
-    }
-  }, []);
-
-  const baseAdapter = useMemo<ChatModelAdapter>(
-    () => createOpenAICompatibleAdapter({ model: model || undefined }),
-    [model],
-  );
+  const baseAdapter = useMemo<ChatModelAdapter>(() => {
+    const apiKey = isAuthenticated && chatKey ? chatKey : "";
+    return createOpenAICompatibleAdapter({
+      model: model || undefined,
+      apiKey,
+    });
+  }, [model, chatKey, isAuthenticated]);
 
   const chatModelAdapter = useMemo<ChatModelAdapter>(
     () => ({

@@ -53,7 +53,6 @@ export const useAttestationStore = create<AttestationState>()((set, get) => ({
         `${env.NEXT_PUBLIC_REDPILL_API_URL}/v1/attestation/report?model=${encodeURIComponent(modelName)}`,
         {
           headers: {
-            Authorization: `Bearer ${env.NEXT_PUBLIC_REDPILL_API_KEY}`,
             "Content-Type": "application/json",
           },
         },

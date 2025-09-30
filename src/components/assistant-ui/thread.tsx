@@ -40,6 +40,7 @@ import { Button } from "@/components/ui/button";
 import { MessageVerificationDialog } from "@/components/message-verification-dialog";
 import { useAssistantBranchHistory } from "@/hooks/use-assistant-branch-history";
 import { useMessageVerification } from "@/hooks/use-message-verification";
+import { useChatKey } from "@/hooks/use-chat-key";
 import { useMessageVerificationStore } from "@/state/message-verification";
 
 interface MessageWithCustomMetadata {
@@ -187,6 +188,8 @@ const ThreadWelcomeSuggestions: FC = () => {
 };
 
 const Composer: FC = () => {
+  const { isLoading } = useChatKey();
+
   return (
     <div className="aui-composer-wrapper sticky bottom-0 mx-auto flex w-full max-w-[var(--thread-max-width)] flex-col gap-4 overflow-visible rounded-t-3xl bg-background pb-4 md:pb-6">
       <ThreadScrollToBottom />
@@ -200,8 +203,9 @@ const Composer: FC = () => {
           placeholder="Send a message..."
           className="aui-composer-input mb-1 max-h-32 min-h-16 w-full resize-none bg-transparent px-3.5 pt-1.5 pb-3 text-base outline-none placeholder:text-muted-foreground focus:outline-primary"
           rows={1}
-          autoFocus
+          autoFocus={!isLoading}
           aria-label="Message input"
+          disabled={isLoading}
         />
         <ComposerAction />
       </ComposerPrimitive.Root>
@@ -210,6 +214,8 @@ const Composer: FC = () => {
 };
 
 const ComposerAction: FC = () => {
+  const { isLoading } = useChatKey();
+
   return (
     <div className="aui-composer-action-wrapper relative mx-1 mt-2 mb-2 flex items-center justify-between">
       <ComposerAddAttachment />
@@ -224,6 +230,7 @@ const ComposerAction: FC = () => {
             size="icon"
             className="aui-composer-send size-[34px] rounded-full p-1"
             aria-label="Send message"
+            disabled={isLoading}
           >
             <ArrowUpIcon className="aui-composer-send-icon size-5" />
           </TooltipIconButton>

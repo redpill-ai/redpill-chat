@@ -41,7 +41,6 @@ export const useMessageVerificationStore = create<MessageVerificationStore>(
           `${env.NEXT_PUBLIC_REDPILL_API_URL}/v1/signature/${messageId}?model=${encodeURIComponent(model)}&signing_algo=ecdsa`,
           {
             headers: {
-              Authorization: `Bearer ${env.NEXT_PUBLIC_REDPILL_API_KEY}`,
               "Content-Type": "application/json",
             },
           },
