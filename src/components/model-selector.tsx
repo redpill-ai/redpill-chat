@@ -40,13 +40,13 @@ export function ModelSelector({ open, onOpenChange }: ModelSelectorProps) {
 
   const modelOptions = models.map((m) => {
     const providerFromName =
-      m.name.split(":")[0]?.trim() || m.providers[0] || "unknown";
-
+      m.id.split("/")[0]?.trim() || m.providers[0] || "unknown";
     return {
       value: m.id,
       label: m.name,
       provider: providerFromName,
       iconUrl: getModelProviderIcon(providerFromName),
+      isGpuTee: m.providers.includes("phala"),
     };
   });
 
@@ -76,7 +76,14 @@ export function ModelSelector({ open, onOpenChange }: ModelSelectorProps) {
                     className="size-4 object-contain"
                   />
                 </div>
-                <span className="flex-1">{option.label}</span>
+                <div className="flex items-center gap-2 flex-1">
+                  <span>{option.label}</span>
+                  {option.isGpuTee && (
+                    <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-950 dark:text-emerald-300 dark:ring-emerald-300/20">
+                      GPU TEE
+                    </span>
+                  )}
+                </div>
               </div>
             </CommandItem>
           ))}

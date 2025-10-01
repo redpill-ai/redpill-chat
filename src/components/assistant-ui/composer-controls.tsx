@@ -48,15 +48,15 @@ export const ComposerControls: FC = () => {
   }, [model, verifyAttestation]);
 
   const modelOptions = models.map((m) => {
-    // Extract provider from model name (e.g., "Meta: Llama 3.3 70B Instruct" -> "Meta")
     const providerFromName =
-      m.name.split(":")[0]?.trim() || m.providers[0] || "unknown";
+      m.id.split("/")[0]?.trim() || m.providers[0] || "unknown";
 
     return {
       value: m.id,
       label: m.name,
       provider: providerFromName,
       iconUrl: getModelProviderIcon(providerFromName),
+      isGpuTee: m.providers.includes("phala"),
     };
   });
 
@@ -134,9 +134,16 @@ export const ComposerControls: FC = () => {
           ) : (
             <Sparkles className="size-4 text-primary" aria-hidden />
           )}
-          <span className="text-sm font-semibold text-foreground">
-            {activeOption?.label || "Select model"}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-foreground">
+              {activeOption?.label || "Select model"}
+            </span>
+            {activeOption?.isGpuTee && (
+              <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-950 dark:text-emerald-300 dark:ring-emerald-300/20">
+                GPU TEE
+              </span>
+            )}
+          </div>
           <div className="ml-auto flex items-center gap-1">
             <kbd className="pointer-events-none inline-flex h-4 select-none items-center gap-0.5 rounded border bg-muted px-1 font-mono text-[9px] font-medium text-muted-foreground opacity-100">
               <span className="text-[8px]">⌘</span>K
