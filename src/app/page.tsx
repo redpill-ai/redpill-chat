@@ -26,8 +26,13 @@ async function getModels(): Promise<Model[]> {
   }
 }
 
-export default async function Home() {
-  const models = await getModels();
+interface PageProps {
+  searchParams: Promise<{ model?: string }>;
+}
 
-  return <ChatInterface models={models} />;
+export default async function Home({ searchParams }: PageProps) {
+  const models = await getModels();
+  const { model: initialModel } = await searchParams;
+
+  return <ChatInterface models={models} initialModel={initialModel} />;
 }

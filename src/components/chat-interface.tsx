@@ -29,20 +29,31 @@ function isAsyncIterable<T>(value: unknown): value is AsyncIterable<T> {
 
 interface ChatInterfaceProps {
   models: Model[];
+  initialModel?: string;
 }
 
-export function ChatInterface({ models }: ChatInterfaceProps) {
+export function ChatInterface({ models, initialModel }: ChatInterfaceProps) {
   const messagesInContext = useChatSettings((state) => state.messagesInContext);
   const responseLanguage = useChatSettings((state) => state.responseLanguage);
   const model = useChatSettings((state) => state.model);
   const temperature = useChatSettings((state) => state.temperature);
   const maxTokens = useChatSettings((state) => state.maxTokens);
+  const setModel = useChatSettings((state) => state.setModel);
   const setModels = useModelsStore((state) => state.setModels);
   const { chatKey, isAuthenticated } = useChatKey();
 
   useEffect(() => {
     setModels(models);
   }, [models, setModels]);
+
+  useEffect(() => {
+    if (initialModel && models.length > 0) {
+      const modelExists = models.some((m) => m.id === initialModel);
+      if (modelExists) {
+        setModel(initialModel);
+      }
+    }
+  }, []);
 
   const baseAdapter = useMemo<ChatModelAdapter>(() => {
     const apiKey = isAuthenticated && chatKey ? chatKey : "";
