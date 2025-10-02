@@ -8,10 +8,14 @@ interface ChatSettingsState {
   messagesInContext: number;
   responseLanguage: string;
   model: string;
+  temperature: number;
+  maxTokens: number;
   setTheme: (theme: ThemeOption) => void;
   setMessagesInContext: (count: number) => void;
   setResponseLanguage: (language: string) => void;
   setModel: (model: string) => void;
+  setTemperature: (temperature: number) => void;
+  setMaxTokens: (maxTokens: number) => void;
 }
 
 const fallbackStorage: Storage = {
@@ -30,11 +34,17 @@ export const useChatSettings = create<ChatSettingsState>()(
       messagesInContext: 15,
       responseLanguage: "English",
       model: "",
+      temperature: 1,
+      maxTokens: 4096,
       setTheme: (theme) => set({ theme }),
       setMessagesInContext: (count) =>
         set({ messagesInContext: Math.min(Math.max(count, 1), 50) }),
       setResponseLanguage: (language) => set({ responseLanguage: language }),
       setModel: (model) => set({ model }),
+      setTemperature: (temperature) =>
+        set({ temperature: Math.min(Math.max(temperature, 0), 2) }),
+      setMaxTokens: (maxTokens) =>
+        set({ maxTokens: Math.min(Math.max(maxTokens, 1), 8192) }),
     }),
     {
       name: "redpill-chat-settings",

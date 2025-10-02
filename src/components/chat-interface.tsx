@@ -35,6 +35,8 @@ export function ChatInterface({ models }: ChatInterfaceProps) {
   const messagesInContext = useChatSettings((state) => state.messagesInContext);
   const responseLanguage = useChatSettings((state) => state.responseLanguage);
   const model = useChatSettings((state) => state.model);
+  const temperature = useChatSettings((state) => state.temperature);
+  const maxTokens = useChatSettings((state) => state.maxTokens);
   const setModels = useModelsStore((state) => state.setModels);
   const { chatKey, isAuthenticated } = useChatKey();
 
@@ -81,6 +83,11 @@ export function ChatInterface({ models }: ChatInterfaceProps) {
         const nextContext = {
           ...context,
           system: systemPrompt,
+          callSettings: {
+            ...context.callSettings,
+            temperature,
+            maxTokens,
+          },
         };
 
         const nextConfig = {
@@ -107,7 +114,7 @@ export function ChatInterface({ models }: ChatInterfaceProps) {
         }
       },
     }),
-    [baseAdapter, messagesInContext, responseLanguage],
+    [baseAdapter, messagesInContext, responseLanguage, temperature, maxTokens],
   );
 
   const runtime = useLocalRuntime(chatModelAdapter);

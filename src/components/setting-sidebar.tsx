@@ -54,6 +54,10 @@ export const SettingSidebar: FC<SettingSidebarProps> = ({
   const setResponseLanguage = useChatSettings(
     (state) => state.setResponseLanguage,
   );
+  const temperature = useChatSettings((state) => state.temperature);
+  const setTemperature = useChatSettings((state) => state.setTemperature);
+  const maxTokens = useChatSettings((state) => state.maxTokens);
+  const setMaxTokens = useChatSettings((state) => state.setMaxTokens);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -199,6 +203,94 @@ export const SettingSidebar: FC<SettingSidebarProps> = ({
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="gap-4">
+            <CardHeader className="pb-0">
+              <CardTitle>Model Parameters</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6 pt-0">
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Temperature</p>
+                  <p className="text-xs text-muted-foreground">
+                    Controls randomness in responses (0-2). Higher values make
+                    output more creative.
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="temperature" className="sr-only">
+                    Temperature
+                  </Label>
+                  <Input
+                    id="temperature"
+                    type="number"
+                    inputMode="decimal"
+                    step="0.1"
+                    min="0"
+                    max="2"
+                    value={temperature}
+                    onChange={(event) => {
+                      const value = Number.parseFloat(event.target.value);
+                      if (!Number.isNaN(value)) {
+                        setTemperature(value);
+                      }
+                    }}
+                    onBlur={(event) => {
+                      const value = Number.parseFloat(event.target.value);
+                      if (Number.isNaN(value)) {
+                        setTemperature(0.7);
+                        return;
+                      }
+                      const clamped = Math.min(Math.max(value, 0), 2);
+                      if (clamped !== temperature) {
+                        setTemperature(clamped);
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Max Tokens</p>
+                  <p className="text-xs text-muted-foreground">
+                    Maximum tokens in response (1-8192). Higher values allow
+                    longer responses.
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="max-tokens" className="sr-only">
+                    Max Tokens
+                  </Label>
+                  <Input
+                    id="max-tokens"
+                    type="number"
+                    inputMode="numeric"
+                    min="1"
+                    max="8192"
+                    value={maxTokens}
+                    onChange={(event) => {
+                      const value = Number.parseInt(event.target.value, 10);
+                      if (!Number.isNaN(value)) {
+                        setMaxTokens(value);
+                      }
+                    }}
+                    onBlur={(event) => {
+                      const value = Number.parseInt(event.target.value, 10);
+                      if (Number.isNaN(value)) {
+                        setMaxTokens(4096);
+                        return;
+                      }
+                      const clamped = Math.min(Math.max(value, 1), 8192);
+                      if (clamped !== maxTokens) {
+                        setMaxTokens(clamped);
+                      }
+                    }}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
