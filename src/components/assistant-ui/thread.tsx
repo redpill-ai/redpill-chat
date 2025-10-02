@@ -41,12 +41,14 @@ import { MessageVerificationDialog } from "@/components/message-verification-dia
 import { useAssistantBranchHistory } from "@/hooks/use-assistant-branch-history";
 import { useMessageVerification } from "@/hooks/use-message-verification";
 import { useChatKey } from "@/hooks/use-chat-key";
+import { useModelsStore } from "@/state/models";
 import { useMessageVerificationStore } from "@/state/message-verification";
 
 interface MessageWithCustomMetadata {
   metadata?: {
     custom?: {
       messageId?: string;
+      model?: string;
     };
   };
 }
@@ -296,8 +298,20 @@ const AssistantActionBar: FC = () => {
   const { verifyMessage } = useMessageVerification();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const messageId = (message as ThreadMessage & MessageWithCustomMetadata)
-    ?.metadata?.custom?.messageId;
+  const models = useModelsStore((state) => state.models);
+
+  const messageCustom = (message as ThreadMessage & MessageWithCustomMetadata)
+    ?.metadata?.custom;
+  const messageId = messageCustom?.messageId;
+  const messageModel = messageCustom?.model;
+
+  // Check if the message was generated with a GPU TEE model
+  const messageModelInfo = messageModel
+    ? models.find((m) => m.id === messageModel)
+    : null;
+  const canVerifyMessage =
+    messageModelInfo?.providers.includes("phala") ?? false;
+
   const verificationState = useMessageVerificationStore((state) =>
     messageId ? state.verifications.get(messageId) : undefined,
   );
@@ -308,14 +322,35 @@ const AssistantActionBar: FC = () => {
     error: null,
   };
 
+  // Track previous completion status to detect status change
+  const prevMessageStatusRef = useRef(message.status?.type);
+
   useEffect(() => {
-    const isComplete = message.status?.type === "complete";
+    const currentStatus = message.status?.type;
+    const prevStatus = prevMessageStatusRef.current;
+    const justCompleted =
+      prevStatus !== "complete" && currentStatus === "complete";
     const hasNoVerificationAttempt = !verificationState;
 
-    if (isComplete && messageId && hasNoVerificationAttempt) {
+    // Only trigger verification when message just completed and can be verified
+    if (
+      justCompleted &&
+      messageId &&
+      hasNoVerificationAttempt &&
+      canVerifyMessage
+    ) {
       verifyMessage(messageId);
     }
-  }, [message.status?.type, messageId, verificationState, verifyMessage]);
+
+    // Update previous status
+    prevMessageStatusRef.current = currentStatus;
+  }, [
+    message.status?.type,
+    messageId,
+    verificationState,
+    verifyMessage,
+    canVerifyMessage,
+  ]);
 
   return (
     <>
@@ -352,6 +387,7 @@ const AssistantActionBar: FC = () => {
                     : "Verify message"
             }
             onClick={() => setIsDialogOpen(true)}
+            disabled={!canVerifyMessage}
             className={cn(
               isVerifying && "animate-spin",
               signatureData && !error && "text-green-600",

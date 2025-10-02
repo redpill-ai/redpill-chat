@@ -40,13 +40,6 @@ export const ComposerControls: FC = () => {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isModelDialogOpen]);
 
-  // Auto-verify when model changes
-  useEffect(() => {
-    if (model) {
-      verifyAttestation(model);
-    }
-  }, [model, verifyAttestation]);
-
   const modelOptions = models.map((m) => {
     const providerFromName =
       m.id.split("/")[0]?.trim() || m.providers[0] || "unknown";
@@ -63,6 +56,13 @@ export const ComposerControls: FC = () => {
   // Auto-select first model if none is selected
   const activeOption =
     modelOptions.find((option) => option.value === model) ?? modelOptions[0];
+
+  // Auto-verify when model changes (only for GPU TEE models)
+  useEffect(() => {
+    if (model && activeOption?.isGpuTee) {
+      verifyAttestation(model);
+    }
+  }, [model, verifyAttestation, activeOption?.isGpuTee]);
 
   // Set default model when models are loaded and no model is selected
   if (!model && modelOptions.length > 0) {
@@ -159,9 +159,12 @@ export const ComposerControls: FC = () => {
           type="button"
           variant="outline"
           size="sm"
+          disabled={!activeOption?.isGpuTee}
           className={cn(
             "aui-composer-verifier-trigger inline-flex items-center gap-2 rounded-full",
-            verificationState.className,
+            !activeOption?.isGpuTee
+              ? "text-muted-foreground bg-muted border-muted"
+              : verificationState.className,
           )}
           onClick={() => toggleRightPanel("verifier")}
           aria-label="Open verifier sidebar"

@@ -388,6 +388,7 @@ export function createOpenAICompatibleAdapter({
         metadata: {
           custom: {
             messageId,
+            model,
           },
         },
       };

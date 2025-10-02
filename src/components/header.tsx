@@ -2,6 +2,8 @@ import { Menu, Settings2, ShieldCheck } from "lucide-react";
 import type { FC } from "react";
 
 import { Button } from "@/components/ui/button";
+import { useChatSettings } from "@/hooks/use-chat-settings";
+import { useModelsStore } from "@/state/models";
 
 import type { RightPanel } from "@/types/layout";
 
@@ -20,6 +22,11 @@ export const Header: FC<HeaderProps> = ({
   onToggleSettings,
   onToggleVerifier,
 }) => {
+  // Get current model info to check if it's GPU TEE
+  const model = useChatSettings((state) => state.model);
+  const models = useModelsStore((state) => state.models);
+  const currentModel = models.find((m) => m.id === model);
+  const isGpuTeeModel = currentModel?.providers.includes("phala") ?? false;
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-20 px-3 py-3 md:px-4 md:py-4">
       <div className="flex items-start justify-between gap-2">
@@ -53,6 +60,7 @@ export const Header: FC<HeaderProps> = ({
             size="icon"
             variant={activeRightPanel === "verifier" ? "secondary" : "ghost"}
             aria-pressed={activeRightPanel === "verifier"}
+            disabled={!isGpuTeeModel}
             aria-label={
               activeRightPanel === "verifier"
                 ? "Close verifier sidebar"
