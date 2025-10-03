@@ -208,7 +208,11 @@ export function createOpenAICompatibleAdapter({
         body.temperature = callSettings.temperature;
       }
       if (typeof callSettings.maxTokens === "number") {
-        body.max_tokens = callSettings.maxTokens;
+        if (model.startsWith("openai")) {
+          body.max_completion_tokens = callSettings.maxTokens;
+        } else {
+          body.max_tokens = callSettings.maxTokens;
+        }
       }
       if (typeof callSettings.topP === "number") {
         body.top_p = callSettings.topP;
