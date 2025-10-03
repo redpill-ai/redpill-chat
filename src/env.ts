@@ -8,9 +8,11 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_WEB_URL: z.string().url(),
     NEXT_PUBLIC_REDPILL_API_URL: z.string().url(),
+    NEXT_PUBLIC_GTM_ID: z.string().optional(),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_WEB_URL: process.env.NEXT_PUBLIC_WEB_URL,
     NEXT_PUBLIC_REDPILL_API_URL: process.env.NEXT_PUBLIC_REDPILL_API_URL,
+    NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,
   },
 });
