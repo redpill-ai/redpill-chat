@@ -146,7 +146,7 @@ export const MessageVerificationDialog: FC<MessageVerificationDialogProps> = ({
             </p>
             <p className="mt-2">
               <a
-                href="https://docs.redpill.ai/confidential-ai-inference/get-started#verify-signature"
+                href="https://docs.redpill.ai/confidential-ai/verification"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-primary hover:text-primary/80 flex items-center gap-1"
