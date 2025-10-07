@@ -291,7 +291,7 @@ export const VerifierSidebar: FC<VerifierSidebarProps> = ({
             </h3>
             <div className="space-y-2">
               <a
-                href="https://docs.redpill.ai/confidential-ai-inference/introduction"
+                href="https://docs.redpill.ai/confidential-ai/overview"
                 className="flex items-center gap-2 text-primary hover:text-primary/80 text-xs"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -300,13 +300,13 @@ export const VerifierSidebar: FC<VerifierSidebarProps> = ({
                 How It Works
               </a>
               <a
-                href="https://docs.redpill.ai/confidential-ai-inference/host-llm-in-tee"
+                href="https://docs.redpill.ai/confidential-ai/attestation"
                 className="flex items-center gap-2 text-primary hover:text-primary/80 text-xs"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                Host LLM in TEE
+                TEE Attestation
               </a>
             </div>
           </div>
