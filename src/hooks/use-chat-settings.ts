@@ -51,6 +51,13 @@ export const useChatSettings = create<ChatSettingsState>()(
       storage: createJSONStorage(() =>
         typeof window === "undefined" ? fallbackStorage : window.localStorage,
       ),
+      partialize: (state) => ({
+        theme: state.theme,
+        messagesInContext: state.messagesInContext,
+        responseLanguage: state.responseLanguage,
+        temperature: state.temperature,
+        maxTokens: state.maxTokens,
+      }),
     },
   ),
 );

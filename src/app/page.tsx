@@ -19,7 +19,19 @@ async function getModels(): Promise<Model[]> {
     }
 
     const data = await response.json();
-    return data.data || [];
+    const models = data.data || [];
+
+    // Filter out models with output_modalities that is 'embeddings'
+    const filteredModels = models.filter((model: Model) => {
+      return !model.specs?.output_modalities?.includes("embeddings");
+    });
+
+    // Sort to put qwen/qwen2.5-vl-72b-instruct at the beginning
+    return filteredModels.sort((a: Model, b: Model) => {
+      if (a.id === "qwen/qwen-2.5-7b-instruct") return -1;
+      if (b.id === "qwen/qwen-2.5-7b-instruct") return 1;
+      return 0;
+    });
   } catch (error) {
     console.error("Error fetching models:", error);
     return [];
