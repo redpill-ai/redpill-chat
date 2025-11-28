@@ -13,7 +13,7 @@ export function cn(...inputs: ClassValue[]) {
 export function isGpuTeeModel(
   providers: string[] | Array<{ name: string }>,
 ): boolean {
-  const GPU_TEE_PROVIDERS = ["phala", "tinfoil"];
+  const GPU_TEE_PROVIDERS = ["phala", "tinfoil", "nearai"];
 
   if (!providers || providers.length === 0) {
     return false;
