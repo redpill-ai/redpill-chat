@@ -70,6 +70,8 @@ export function getModelProviderIcon(providerName: string): string {
       return getGstaticUrl("https://qwenlm.github.io/");
     case "phala":
       return getGstaticUrl("https://phala.network/");
+    case "nearai":
+      return getGstaticUrl("https://near.ai/");
     case "tinfoil":
       return getGstaticUrl("https://tinfoil.sh/");
     case "z-ai":
