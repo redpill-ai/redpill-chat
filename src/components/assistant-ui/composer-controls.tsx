@@ -57,17 +57,19 @@ export const ComposerControls: FC = () => {
   const activeOption =
     modelOptions.find((option) => option.value === model) ?? modelOptions[0];
 
+  // Set default model when models are loaded and no model is selected
+  useEffect(() => {
+    if (!model && modelOptions.length > 0) {
+      setModel(modelOptions[0].value);
+    }
+  }, [model, modelOptions, setModel]);
+
   // Auto-verify when model changes (only for GPU TEE models)
   useEffect(() => {
     if (model && activeOption?.isGpuTee) {
       verifyAttestation(model);
     }
   }, [model, verifyAttestation, activeOption?.isGpuTee]);
-
-  // Set default model when models are loaded and no model is selected
-  if (!model && modelOptions.length > 0) {
-    setModel(modelOptions[0].value);
-  }
 
   // Get verification button state
   const getVerificationState = () => {
