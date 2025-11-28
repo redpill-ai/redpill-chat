@@ -18,7 +18,9 @@ import { RIGHT_PANEL_WIDTH } from "@/constants";
 import { cn } from "@/lib/utils";
 import { useChatSettings } from "@/hooks/use-chat-settings";
 import { useAttestation } from "@/hooks/use-attestation";
+import { useModelsStore } from "@/state/models";
 import type { NvidiaPayload } from "@/types/attestation";
+import { TinfoilVerifierSidebar } from "@/components/tinfoil-verifier-sidebar";
 
 interface VerifierSidebarProps {
   isVisible: boolean;
@@ -143,14 +145,28 @@ export const VerifierSidebar: FC<VerifierSidebarProps> = ({
   onClose,
 }) => {
   const { model: selectedModel } = useChatSettings();
+  const models = useModelsStore((state) => state.models);
   const { isVerifying, isVerified, attestationData, verifyAttestation, error } =
     useAttestation();
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
 
+  // Get current model info to check if it's tinfoil
+  const currentModel = models.find((m) => m.id === selectedModel);
+  const isTinfoilModel = currentModel
+    ? currentModel.providers.includes("tinfoil")
+    : false;
+
   // Note: Auto-verification is now handled in ComposerControls
   // Only trigger verification here if we don't have any data yet
   useEffect(() => {
-    if (selectedModel && isVisible && !isVerifying && !isVerified && !error) {
+    if (
+      selectedModel &&
+      isVisible &&
+      !isVerifying &&
+      !isVerified &&
+      !error &&
+      !isTinfoilModel
+    ) {
       verifyAttestation(selectedModel);
     }
   }, [
@@ -160,7 +176,13 @@ export const VerifierSidebar: FC<VerifierSidebarProps> = ({
     isVerified,
     error,
     verifyAttestation,
+    isTinfoilModel,
   ]);
+
+  // If the model is from Tinfoil provider, render the Tinfoil verifier sidebar
+  if (isTinfoilModel) {
+    return <TinfoilVerifierSidebar isVisible={isVisible} onClose={onClose} />;
+  }
 
   const parseNvidiaPayload = (payload: string): NvidiaPayload | null => {
     try {

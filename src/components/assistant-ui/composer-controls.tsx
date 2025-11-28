@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { useChatLayout } from "@/hooks/use-chat-layout";
 import { useChatSettings } from "@/hooks/use-chat-settings";
 import { useAttestation } from "@/hooks/use-attestation";
-import { getModelProviderIcon, cn } from "@/lib/utils";
+import { getModelProviderIcon, cn, isGpuTeeModel } from "@/lib/utils";
 import { useModelsStore } from "@/state/models";
 
 export const ComposerControls: FC = () => {
@@ -49,7 +49,8 @@ export const ComposerControls: FC = () => {
       label: m.name,
       provider: providerFromName,
       iconUrl: getModelProviderIcon(providerFromName),
-      isGpuTee: m.providers.includes("phala"),
+      isGpuTee: isGpuTeeModel(m.providers),
+      isTinfoil: m.providers.includes("tinfoil"),
     };
   });
 
@@ -64,15 +65,31 @@ export const ComposerControls: FC = () => {
     }
   }, [model, modelOptions, setModel]);
 
-  // Auto-verify when model changes (only for GPU TEE models)
+  // Auto-verify when model changes (only for GPU TEE models that are not Tinfoil)
   useEffect(() => {
-    if (model && activeOption?.isGpuTee) {
+    if (model && activeOption?.isGpuTee && !activeOption?.isTinfoil) {
       verifyAttestation(model);
     }
-  }, [model, verifyAttestation, activeOption?.isGpuTee]);
+  }, [
+    model,
+    verifyAttestation,
+    activeOption?.isGpuTee,
+    activeOption?.isTinfoil,
+  ]);
 
   // Get verification button state
   const getVerificationState = () => {
+    // Tinfoil models and verified Phala models show verified state
+    if (activeOption?.isTinfoil || isVerified) {
+      return {
+        icon: ShieldCheckIcon,
+        text: "Chat is private",
+        className:
+          "bg-green-50 border-green-200 text-green-800 hover:bg-green-100 hover:text-green-900",
+        iconClass: "",
+      };
+    }
+
     if (isVerifying) {
       return {
         icon: RefreshCw,
@@ -88,16 +105,6 @@ export const ComposerControls: FC = () => {
         text: "Privacy unverified",
         className:
           "bg-red-50 border-red-200 text-red-700 hover:bg-red-100 hover:text-red-800",
-        iconClass: "",
-      };
-    }
-
-    if (isVerified) {
-      return {
-        icon: ShieldCheckIcon,
-        text: "Chat is private",
-        className:
-          "bg-green-50 border-green-200 text-green-800 hover:bg-green-100 hover:text-green-900",
         iconClass: "",
       };
     }

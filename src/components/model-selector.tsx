@@ -11,7 +11,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useChatSettings } from "@/hooks/use-chat-settings";
-import { getModelProviderIcon } from "@/lib/utils";
+import { getModelProviderIcon, isGpuTeeModel } from "@/lib/utils";
 import { useModelsStore } from "@/state/models";
 
 interface ModelSelectorProps {
@@ -46,7 +46,7 @@ export function ModelSelector({ open, onOpenChange }: ModelSelectorProps) {
       label: m.name,
       provider: providerFromName,
       iconUrl: getModelProviderIcon(providerFromName),
-      isGpuTee: m.providers.includes("phala"),
+      isGpuTee: isGpuTeeModel(m.providers),
     };
   });
 

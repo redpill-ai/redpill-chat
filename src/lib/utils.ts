@@ -6,6 +6,35 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Check if a model is using GPU TEE (Trusted Execution Environment)
+ * @param providers - Array of provider names (strings) or provider objects with name field
+ * @returns True if any provider is a GPU TEE provider
+ */
+export function isGpuTeeModel(
+  providers: string[] | Array<{ name: string }>,
+): boolean {
+  const GPU_TEE_PROVIDERS = ["phala", "tinfoil"];
+
+  if (!providers || providers.length === 0) {
+    return false;
+  }
+
+  // Handle string array
+  if (typeof providers[0] === "string") {
+    return providers.some((provider) =>
+      GPU_TEE_PROVIDERS.includes((provider as string).toLowerCase()),
+    );
+  }
+
+  // Handle object array with name field
+  return providers.some((provider) =>
+    GPU_TEE_PROVIDERS.includes(
+      (provider as { name: string }).name.toLowerCase(),
+    ),
+  );
+}
+
+/**
  * Get model provider icon URL using Google's favicon service
  */
 export function getModelProviderIcon(providerName: string): string {
@@ -41,6 +70,12 @@ export function getModelProviderIcon(providerName: string): string {
       return getGstaticUrl("https://qwenlm.github.io/");
     case "phala":
       return getGstaticUrl("https://phala.network/");
+    case "tinfoil":
+      return getGstaticUrl("https://tinfoil.sh/");
+    case "z-ai":
+      return getGstaticUrl("https://chat.z.ai/");
+    case "redpill":
+      return "/favicon-32x32.png";
     default:
       return getGstaticUrl("https://huggingface.co/");
   }
