@@ -65,8 +65,13 @@ export const useAttestationStore = create<AttestationState>()((set, get) => ({
       }
 
       const data = await response.json();
+
+      // Check if response contains model_attestations key
+      const attestationData =
+        "model_attestations" in data ? data.model_attestations[0] : data;
+
       set({
-        attestationData: data as AttestationReport,
+        attestationData: attestationData as AttestationReport,
         isVerified: true,
         isVerifying: false,
         error: null,
