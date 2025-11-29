@@ -13,7 +13,7 @@ export function cn(...inputs: ClassValue[]) {
 export function isGpuTeeModel(
   providers: string[] | Array<{ name: string }>,
 ): boolean {
-  const GPU_TEE_PROVIDERS = ["phala", "tinfoil", "nearai"];
+  const GPU_TEE_PROVIDERS = ["phala", "tinfoil", "near-ai"];
 
   if (!providers || providers.length === 0) {
     return false;
@@ -70,7 +70,7 @@ export function getModelProviderIcon(providerName: string): string {
       return getGstaticUrl("https://qwenlm.github.io/");
     case "phala":
       return getGstaticUrl("https://phala.network/");
-    case "nearai":
+    case "near-ai":
       return getGstaticUrl("https://near.ai/");
     case "tinfoil":
       return getGstaticUrl("https://tinfoil.sh/");
