@@ -175,6 +175,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({ isOpen, onClose }) => {
           className="flex items-center gap-2"
         >
           <Image
+            className="dark:invert dark:hue-rotate-180"
             src="/logo-horizontal-primary.svg"
             alt="Redpill"
             width={120}

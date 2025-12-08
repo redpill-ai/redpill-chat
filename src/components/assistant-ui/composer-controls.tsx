@@ -85,7 +85,7 @@ export const ComposerControls: FC = () => {
         icon: ShieldCheckIcon,
         text: "Chat is private",
         className:
-          "bg-green-50 border-green-200 text-green-800 hover:bg-green-100 hover:text-green-900",
+          "bg-green-50 border-green-200 text-green-800 hover:bg-green-100 hover:text-green-900 dark:bg-emerald-950 dark:text-emerald-300",
         iconClass: "",
       };
     }
