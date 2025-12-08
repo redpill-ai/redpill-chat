@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import type { FC } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { RIGHT_PANEL_WIDTH } from "@/constants";
-import { cn } from "@/lib/utils";
 import { getTinfoilClient } from "@/lib/tinfoil-client";
+import { cn } from "@/lib/utils";
 
 interface TinfoilVerifierSidebarProps {
   isVisible: boolean;
@@ -17,14 +17,18 @@ export const TinfoilVerifierSidebar: FC<TinfoilVerifierSidebarProps> = ({
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isReady, setIsReady] = useState(false);
-  const [verificationDocument, setVerificationDocument] = useState<any>(null);
+  const [verificationDocument, setVerificationDocument] =
+    useState<unknown>(null);
 
   const fetchVerificationDocument = useCallback(async () => {
     try {
       const client = await getTinfoilClient();
-      await (client as any).ready?.();
+      const readyFn = (client as { ready?: () => Promise<unknown> }).ready;
+      await readyFn?.();
 
-      const doc = await (client as any).getVerificationDocument?.();
+      const doc = await (
+        client as { getVerificationDocument?: () => Promise<unknown> }
+      ).getVerificationDocument?.();
       if (doc) {
         setVerificationDocument(doc);
         if (isReady && iframeRef.current) {

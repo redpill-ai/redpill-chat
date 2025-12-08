@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAuth } from "./use-auth";
 import { useChatKeyStore } from "@/store/chat-key";
+import { useAuth } from "./use-auth";
 
 export function useChatKey() {
   const { isAuthenticated, user, status: authStatus } = useAuth();
@@ -28,6 +28,9 @@ export function useChatKey() {
     isChatKeyLoading,
     hasFetched,
     authStatus,
+    fetchChatKey,
+    clearChatKey,
+    user,
   ]);
 
   const isLoading =

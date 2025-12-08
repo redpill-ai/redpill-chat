@@ -1,6 +1,6 @@
 import { ChatInterface } from "@/components/chat-interface";
-import type { Model } from "@/types/model";
 import { env } from "@/env";
+import type { Model } from "@/types/model";
 
 async function getModels(): Promise<Model[]> {
   try {

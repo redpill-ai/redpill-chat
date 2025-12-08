@@ -1,14 +1,14 @@
 "use client";
 
 import {
+  AlertCircle,
+  Check,
   Copy,
   ExternalLink,
   RefreshCw,
-  Check,
-  AlertCircle,
 } from "lucide-react";
-import { useState, useEffect } from "react";
 import type { FC } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,8 +17,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
 import { useMessageVerification } from "@/hooks/use-message-verification";
+import { cn } from "@/lib/utils";
 import { useAttestationStore } from "@/state/attestation";
 import { useMessageVerificationStore } from "@/state/message-verification";
 

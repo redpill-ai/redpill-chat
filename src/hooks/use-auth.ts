@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { create } from "zustand";
-
+import { indexedDBStorage } from "@/services/storage/indexed-db";
 import type { CurrentUser } from "@/types/auth";
 
 type AuthStatus = "idle" | "loading" | "authenticated" | "unauthenticated";
@@ -49,6 +49,11 @@ const useAuthStore = create<AuthState>((set, get) => ({
         credentials: "include",
       });
     } finally {
+      try {
+        await indexedDBStorage.clearAll();
+      } catch (error) {
+        console.error("Failed to clear chat storage on logout", error);
+      }
       set({ user: null, status: "unauthenticated" });
     }
   },

@@ -30,7 +30,7 @@ const useFileSrc = (file: File | undefined) => {
   const [src, setSrc] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    if (!file) {
+    if (!file || !(file instanceof Blob)) {
       setSrc(undefined);
       return;
     }

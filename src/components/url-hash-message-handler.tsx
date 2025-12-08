@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { useComposerRuntime } from "@assistant-ui/react";
+import { useEffect, useRef } from "react";
 
 export function UrlHashMessageHandler() {
   const composerRuntime = useComposerRuntime();

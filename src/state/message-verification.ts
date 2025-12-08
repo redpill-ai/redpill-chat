@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { env } from "@/env";
 import type {
-  SignatureData,
   MessageVerificationState,
+  SignatureData,
 } from "@/types/message-verification";
 
 interface MessageVerificationStore {

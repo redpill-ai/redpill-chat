@@ -5,9 +5,9 @@ import {
   ErrorPrimitive,
   MessagePrimitive,
   type ReasoningMessagePartComponent,
+  type ThreadMessage,
   ThreadPrimitive,
   useMessage,
-  type ThreadMessage,
 } from "@assistant-ui/react";
 import {
   ArrowDownIcon,
@@ -36,13 +36,14 @@ import { ComposerControls } from "@/components/assistant-ui/composer-controls";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
-import { Button } from "@/components/ui/button";
 import { MessageVerificationDialog } from "@/components/message-verification-dialog";
+import { Button } from "@/components/ui/button";
 import { useAssistantBranchHistory } from "@/hooks/use-assistant-branch-history";
-import { useMessageVerification } from "@/hooks/use-message-verification";
 import { useChatKey } from "@/hooks/use-chat-key";
-import { useModelsStore } from "@/state/models";
+import { useMessageVerification } from "@/hooks/use-message-verification";
 import { useMessageVerificationStore } from "@/state/message-verification";
+import { useModelsStore } from "@/state/models";
+import { cn } from "@/lib/utils";
 
 interface MessageWithCustomMetadata {
   metadata?: {
@@ -52,7 +53,6 @@ interface MessageWithCustomMetadata {
     };
   };
 }
-import { cn } from "@/lib/utils";
 
 export const Thread: FC = () => {
   useAssistantBranchHistory();

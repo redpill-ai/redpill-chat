@@ -1,26 +1,25 @@
 "use client";
 
 import {
-  X,
-  Check,
-  RefreshCw,
   AlertCircle,
-  ExternalLink,
+  Check,
   ChevronDown,
   Copy,
+  ExternalLink,
+  RefreshCw,
+  X,
 } from "lucide-react";
-import { useState, useEffect } from "react";
-import type { FC, ReactNode } from "react";
 import Image from "next/image";
-
+import type { FC, ReactNode } from "react";
+import { useEffect, useState } from "react";
+import { TinfoilVerifierSidebar } from "@/components/tinfoil-verifier-sidebar";
 import { Button } from "@/components/ui/button";
 import { RIGHT_PANEL_WIDTH } from "@/constants";
-import { cn } from "@/lib/utils";
-import { useChatSettings } from "@/hooks/use-chat-settings";
 import { useAttestation } from "@/hooks/use-attestation";
+import { useChatSettings } from "@/hooks/use-chat-settings";
+import { cn } from "@/lib/utils";
 import { useModelsStore } from "@/state/models";
 import type { NvidiaPayload } from "@/types/attestation";
-import { TinfoilVerifierSidebar } from "@/components/tinfoil-verifier-sidebar";
 
 interface VerifierSidebarProps {
   isVisible: boolean;

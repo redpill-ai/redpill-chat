@@ -1,29 +1,103 @@
 "use client";
 
-import {
-  AssistantRuntimeProvider,
-  type ChatModelAdapter,
-  type ChatModelRunResult,
-  useLocalRuntime,
-} from "@assistant-ui/react";
+import type { ChatModelAdapter, ChatModelRunResult } from "@assistant-ui/react";
 import { useEffect, useMemo } from "react";
 import { Thread } from "@/components/assistant-ui/thread";
+import { ChatRuntimeWrapper } from "@/components/chat-runtime-wrapper";
 import { Header } from "@/components/header";
 import { LeftSidebar } from "@/components/left-sidebar";
 import { SettingSidebar } from "@/components/setting-sidebar";
+import { UrlHashMessageHandler } from "@/components/url-hash-message-handler";
 import { VerifierSidebar } from "@/components/verifier-sidebar";
 import { RIGHT_PANEL_WIDTH, SIDEBAR_WIDTH } from "@/constants";
+import { useChatKey } from "@/hooks/use-chat-key";
 import { useChatLayout } from "@/hooks/use-chat-layout";
 import { useChatSettings } from "@/hooks/use-chat-settings";
-import { useChatKey } from "@/hooks/use-chat-key";
+import {
+  ChatStorageProvider,
+  useChatStorageContext,
+} from "@/lib/chat-storage-context";
 import { createOpenAICompatibleAdapter } from "@/lib/openai-compatible-adapter";
 import { useModelsStore } from "@/state/models";
 import type { Model } from "@/types/model";
-import { UrlHashMessageHandler } from "@/components/url-hash-message-handler";
 
 function isAsyncIterable<T>(value: unknown): value is AsyncIterable<T> {
   return (
     typeof value === "object" && value !== null && Symbol.asyncIterator in value
+  );
+}
+
+// Internal component that has access to ChatStorageContext
+function ChatInterfaceInner({
+  chatModelAdapter,
+}: {
+  chatModelAdapter: ChatModelAdapter;
+}) {
+  const { currentChat } = useChatStorageContext();
+
+  const {
+    isCompactLayout,
+    isSidebarOpen,
+    activeRightPanel,
+    isRightPanelVisible,
+    shouldShowOverlay,
+    setIsSidebarOpen,
+    toggleSidebar,
+    toggleRightPanel,
+    closeRightPanel,
+  } = useChatLayout();
+
+  return (
+    <ChatRuntimeWrapper
+      key={currentChat?.id}
+      chatModelAdapter={chatModelAdapter}
+    >
+      <UrlHashMessageHandler />
+      <div className="relative flex h-screen overflow-hidden bg-background text-foreground">
+        {shouldShowOverlay ? (
+          <div
+            aria-hidden
+            className="fixed inset-0 z-20 bg-background/70 backdrop-blur-sm transition-opacity duration-300"
+            onClick={() => {
+              setIsSidebarOpen(false);
+              closeRightPanel();
+            }}
+          />
+        ) : null}
+
+        <LeftSidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+
+        <main
+          className="relative flex min-w-0 flex-1 flex-col overflow-hidden transition-[margin] duration-250 ease-in-out"
+          style={{
+            marginLeft: !isCompactLayout && isSidebarOpen ? SIDEBAR_WIDTH : 0,
+            marginRight:
+              !isCompactLayout && isRightPanelVisible ? RIGHT_PANEL_WIDTH : 0,
+          }}
+        >
+          <Header
+            isSidebarOpen={isSidebarOpen}
+            onToggleSidebar={toggleSidebar}
+            activeRightPanel={activeRightPanel}
+            onToggleSettings={() => toggleRightPanel("settings")}
+            onToggleVerifier={() => toggleRightPanel("verifier")}
+          />
+          <Thread />
+        </main>
+
+        <SettingSidebar
+          isVisible={activeRightPanel === "settings"}
+          onClose={closeRightPanel}
+        />
+        <VerifierSidebar
+          isVisible={activeRightPanel === "verifier"}
+          onClose={closeRightPanel}
+        />
+      </div>
+    </ChatRuntimeWrapper>
   );
 }
 
@@ -53,7 +127,7 @@ export function ChatInterface({ models, initialModel }: ChatInterfaceProps) {
         setModel(initialModel);
       }
     }
-  }, []);
+  }, [initialModel, models, setModel]);
 
   const baseAdapter = useMemo<ChatModelAdapter>(() => {
     const apiKey = isAuthenticated && chatKey ? chatKey : "";
@@ -128,67 +202,9 @@ export function ChatInterface({ models, initialModel }: ChatInterfaceProps) {
     [baseAdapter, messagesInContext, responseLanguage, temperature, maxTokens],
   );
 
-  const runtime = useLocalRuntime(chatModelAdapter);
-
-  const {
-    isCompactLayout,
-    isSidebarOpen,
-    activeRightPanel,
-    isRightPanelVisible,
-    shouldShowOverlay,
-    setIsSidebarOpen,
-    toggleSidebar,
-    toggleRightPanel,
-    closeRightPanel,
-  } = useChatLayout();
-
   return (
-    <AssistantRuntimeProvider runtime={runtime}>
-      <UrlHashMessageHandler />
-      <div className="relative flex h-screen overflow-hidden bg-background text-foreground">
-        {shouldShowOverlay ? (
-          <div
-            aria-hidden
-            className="fixed inset-0 z-20 bg-background/70 backdrop-blur-sm transition-opacity duration-300"
-            onClick={() => {
-              setIsSidebarOpen(false);
-              closeRightPanel();
-            }}
-          />
-        ) : null}
-
-        <LeftSidebar
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
-        />
-
-        <main
-          className="relative flex min-w-0 flex-1 flex-col overflow-hidden transition-[margin] duration-250 ease-in-out"
-          style={{
-            marginLeft: !isCompactLayout && isSidebarOpen ? SIDEBAR_WIDTH : 0,
-            marginRight:
-              !isCompactLayout && isRightPanelVisible ? RIGHT_PANEL_WIDTH : 0,
-          }}
-        >
-          <Header
-            isSidebarOpen={isSidebarOpen}
-            onToggleSidebar={toggleSidebar}
-            activeRightPanel={activeRightPanel}
-            onToggleSettings={() => toggleRightPanel("settings")}
-            onToggleVerifier={() => toggleRightPanel("verifier")}
-          />
-          <Thread />
-        </main>
-
-        <SettingSidebar
-          isVisible={activeRightPanel === "settings"}
-          onClose={closeRightPanel}
-        />
-        <VerifierSidebar
-          isVisible={activeRightPanel === "verifier"}
-          onClose={closeRightPanel}
-        />
-      </div>
-    </AssistantRuntimeProvider>
+    <ChatStorageProvider>
+      <ChatInterfaceInner chatModelAdapter={chatModelAdapter} />
+    </ChatStorageProvider>
   );
 }

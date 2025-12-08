@@ -1,11 +1,10 @@
 "use client";
 
-import { LogOut, UserRound, X } from "lucide-react";
+import { Download, LogOut, UserRound, X } from "lucide-react";
 import Image from "next/image";
 import type { FC } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { env } from "@/env";
-import { ThreadList } from "@/components/assistant-ui/thread-list";
+import { ChatHistoryList } from "@/components/chat-history-list";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +23,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SIDEBAR_WIDTH } from "@/constants";
+import { env } from "@/env";
 import { useAuth } from "@/hooks/use-auth";
+import { toast } from "@/hooks/use-toast";
+import { useChatStorageContext } from "@/lib/chat-storage-context";
+import { downloadChats } from "@/lib/download-chats";
 import { cn } from "@/lib/utils";
 
 interface LeftSidebarProps {
@@ -50,6 +53,14 @@ const normalizeUrl = (url: string | undefined) => {
 
 export const LeftSidebar: FC<LeftSidebarProps> = ({ isOpen, onClose }) => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const {
+    chats,
+    currentChat,
+    createChat,
+    selectChat,
+    updateChatTitle,
+    deleteChat,
+  } = useChatStorageContext();
 
   const baseWebUrl = normalizeUrl(env.NEXT_PUBLIC_WEB_URL);
   const loginBaseHref = baseWebUrl ? `${baseWebUrl}/login` : "/login";
@@ -76,6 +87,29 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({ isOpen, onClose }) => {
 
   const handleLogout = () => {
     void logout();
+  };
+
+  // Handle download chats
+  const handleDownloadChats = async () => {
+    try {
+      await downloadChats(chats);
+    } catch (_error) {
+      toast({
+        variant: "destructive",
+        title: "Download failed",
+        description: "Failed to download chats. Please try again.",
+      });
+    }
+  };
+
+  // Filter chats - exclude blank chats
+  const filteredChats = useMemo(() => {
+    return chats.filter((chat) => chat.messages.length > 0);
+  }, [chats]);
+
+  // Handle new chat creation
+  const handleNewChat = () => {
+    createChat();
   };
 
   const userMenu =
@@ -160,9 +194,9 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({ isOpen, onClose }) => {
           </Button>
         </div>
       </div>
-      <div className="mt-6">
+      <div className="mt-6 flex flex-1 flex-col gap-4 min-h-0 overflow-hidden">
         {isAuthenticated && user ? null : showLoadingState ? null : (
-          <Card className="mb-6">
+          <Card className="mb-2">
             <CardHeader>
               <CardTitle>Welcome back</CardTitle>
               <CardDescription>
@@ -182,7 +216,45 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({ isOpen, onClose }) => {
             </CardContent>
           </Card>
         )}
-        <ThreadList />
+
+        {/* Chat History Section */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between px-2">
+            <h3 className="text-sm font-medium text-foreground">
+              Chat History
+            </h3>
+            <div className="flex items-center gap-1">
+              {chats.length > 0 && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="size-7"
+                  onClick={() => void handleDownloadChats()}
+                  title="Download all chats as ZIP"
+                >
+                  <Download className="size-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="text-xs text-muted-foreground px-2">
+            Your chats are stored locally in this browser and won't sync to
+            other devices.
+          </div>
+        </div>
+
+        {/* Chat History List */}
+        <div className="flex-1 min-h-0">
+          <ChatHistoryList
+            chats={filteredChats}
+            currentChatId={currentChat?.id || null}
+            onChatSelect={selectChat}
+            onChatDelete={deleteChat}
+            onChatRename={updateChatTitle}
+            onNewChat={handleNewChat}
+          />
+        </div>
       </div>
     </aside>
   );

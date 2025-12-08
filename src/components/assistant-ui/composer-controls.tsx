@@ -1,20 +1,20 @@
 "use client";
 
 import {
+  AlertCircle,
   ChevronDownIcon,
+  RefreshCw,
   ShieldCheckIcon,
   Sparkles,
-  RefreshCw,
-  AlertCircle,
 } from "lucide-react";
 import type { FC } from "react";
 import { useEffect, useState } from "react";
 import { ModelSelector } from "@/components/model-selector";
 import { Button } from "@/components/ui/button";
+import { useAttestation } from "@/hooks/use-attestation";
 import { useChatLayout } from "@/hooks/use-chat-layout";
 import { useChatSettings } from "@/hooks/use-chat-settings";
-import { useAttestation } from "@/hooks/use-attestation";
-import { getModelProviderIcon, cn, isGpuTeeModel } from "@/lib/utils";
+import { cn, getModelProviderIcon, isGpuTeeModel } from "@/lib/utils";
 import { useModelsStore } from "@/state/models";
 
 export const ComposerControls: FC = () => {

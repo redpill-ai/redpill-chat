@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@fontsource/poppins";
 import "./globals.css";
 import { GoogleTagManager } from "@next/third-parties/google";
+import { Toaster } from "@/components/ui/toaster";
 import { env } from "@/env";
 
 export const metadata: Metadata = {
@@ -42,7 +43,10 @@ export default function RootLayout({
       {env.NEXT_PUBLIC_GTM_ID ? (
         <GoogleTagManager gtmId={env.NEXT_PUBLIC_GTM_ID} />
       ) : null}
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }

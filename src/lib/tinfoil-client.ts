@@ -17,13 +17,20 @@ export async function getTinfoilClient(): Promise<TinfoilAI> {
     await initClient(PLACEHOLDER_API_KEY);
   }
 
-  return clientInstance!;
+  if (!clientInstance) {
+    throw new Error("Tinfoil client not initialized");
+  }
+  return clientInstance;
 }
 
 export async function initializeTinfoilClient(): Promise<void> {
   const client = await getTinfoilClient();
   try {
-    await (client as any).ready?.();
+    await (
+      client as {
+        ready?: () => Promise<unknown>;
+      }
+    ).ready?.();
   } catch (error) {
     console.error("Tinfoil client initialization failed", error);
   }

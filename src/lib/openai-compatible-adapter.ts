@@ -3,6 +3,8 @@ import type {
   MessageStatus,
   ThreadAssistantMessagePart,
   ThreadMessage,
+  ThreadUserMessage,
+  ThreadUserMessagePart,
 } from "@assistant-ui/react";
 import { env } from "@/env";
 
@@ -14,17 +16,79 @@ enum Role {
 
 interface OpenAIMessage {
   role: Role;
-  content: string;
+  content: OpenAIContent;
 }
 
-function toTextContent(parts: ThreadMessage["content"]): string {
-  return parts
-    .filter(
-      (part): part is { type: "text"; text: string } => part.type === "text",
-    )
-    .map((part) => part.text)
-    .join("\n\n");
-}
+type OpenAIContentPart =
+  | { type: "text"; text: string }
+  | {
+      type: "image_url";
+      image_url: { url: string; detail?: "auto" | "low" | "high" };
+    };
+
+type OpenAIContent = string | OpenAIContentPart[];
+
+const mapThreadPartToOpenAI = (
+  part: ThreadMessage["content"][number],
+): OpenAIContentPart | null => {
+  if (part.type === "text") {
+    return { type: "text", text: part.text };
+  }
+  if (part.type === "image") {
+    return {
+      type: "image_url",
+      image_url: { url: part.image, detail: "auto" },
+    };
+  }
+  if (part.type === "file") {
+    const label = part.filename ?? "file";
+    const mime = part.mimeType ?? "application/octet-stream";
+    // Send file contents as text so the model can consume them (base64 data URL).
+    return {
+      type: "text",
+      text: `[file name="${label}" mime="${mime}"]\n${part.data}`,
+    };
+  }
+  return null;
+};
+
+const combineContentWithAttachments = (
+  message: ThreadMessage,
+): ThreadMessage["content"] => {
+  if (message.role !== "user") {
+    return message.content;
+  }
+
+  const { attachments, content } = message as ThreadUserMessage;
+  const userParts: ThreadUserMessagePart[] = [...content];
+
+  for (const attachment of attachments) {
+    if (attachment.content?.length) {
+      userParts.push(...attachment.content);
+    }
+  }
+
+  return userParts;
+};
+
+const toOpenAIContent = (
+  parts: ThreadMessage["content"],
+): OpenAIContent | undefined => {
+  const mapped = parts
+    .map(mapThreadPartToOpenAI)
+    .filter((p): p is OpenAIContentPart => p !== null);
+
+  if (mapped.length === 0) {
+    return undefined;
+  }
+
+  // If only one text part and no other media, send as string for compatibility.
+  if (mapped.length === 1 && mapped[0]?.type === "text") {
+    return mapped[0].text;
+  }
+
+  return mapped;
+};
 
 function toOpenAIMessages(messages: ThreadMessage[]): OpenAIMessage[] {
   const result: OpenAIMessage[] = [];
@@ -34,14 +98,13 @@ function toOpenAIMessages(messages: ThreadMessage[]): OpenAIMessage[] {
       continue;
     }
 
-    const text = toTextContent(message.content);
-    if (!text) {
-      continue;
-    }
+    const parts = combineContentWithAttachments(message);
+    const content = toOpenAIContent(parts);
+    if (!content) continue;
 
     result.push({
       role: message.role === Role.User ? Role.User : Role.Assistant,
-      content: text,
+      content,
     });
   }
 

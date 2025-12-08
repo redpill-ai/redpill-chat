@@ -3,8 +3,8 @@ import type { FC } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useChatSettings } from "@/hooks/use-chat-settings";
-import { useModelsStore } from "@/state/models";
 import { isGpuTeeModel } from "@/lib/utils";
+import { useModelsStore } from "@/state/models";
 
 import type { RightPanel } from "@/types/layout";
 
