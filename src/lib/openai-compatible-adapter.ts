@@ -14,6 +14,54 @@ enum Role {
   Assistant = "assistant",
 }
 
+async function extractTextFromPDF(base64Data: string): Promise<string> {
+  // Only run on client side
+  if (typeof window === "undefined") {
+    return "[PDF text extraction is only available on client side]";
+  }
+
+  try {
+    const pdfjsLib = await import("pdfjs-dist");
+
+    // Configure worker path if not already set
+    if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+    }
+
+    // Convert base64 to Uint8Array
+    const binaryString = atob(base64Data);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    // Load PDF document
+    const loadingTask = pdfjsLib.getDocument({ data: bytes });
+    const pdf = await loadingTask.promise;
+
+    // Extract text from all pages
+    const textParts: string[] = [];
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item) => {
+          if ("str" in item) {
+            return item.str;
+          }
+          return "";
+        })
+        .join(" ");
+      textParts.push(pageText);
+    }
+
+    return textParts.join("\n\n");
+  } catch (error) {
+    console.error("Failed to extract text from PDF:", error);
+    return "[PDF text extraction failed]";
+  }
+}
+
 interface OpenAIMessage {
   role: Role;
   content: OpenAIContent;
@@ -28,9 +76,9 @@ type OpenAIContentPart =
 
 type OpenAIContent = string | OpenAIContentPart[];
 
-const mapThreadPartToOpenAI = (
+const mapThreadPartToOpenAI = async (
   part: ThreadMessage["content"][number],
-): OpenAIContentPart | null => {
+): Promise<OpenAIContentPart | null> => {
   if (part.type === "text") {
     return { type: "text", text: part.text };
   }
@@ -41,12 +89,53 @@ const mapThreadPartToOpenAI = (
     };
   }
   if (part.type === "file") {
-    const label = part.filename ?? "file";
     const mime = part.mimeType ?? "application/octet-stream";
-    // Send file contents as text so the model can consume them (base64 data URL).
+    const label = part.filename ?? "file";
+    // Handle PDF files - extract text
+    if (mime === "application/pdf") {
+      const base64Data = part.data.startsWith("data:")
+        ? (part.data.split(",")[1] ?? part.data)
+        : part.data;
+      const pdfText = await extractTextFromPDF(base64Data);
+      return {
+        type: "text",
+        text: `[file: "${label}" type="${mime}"]\n${pdfText}`,
+      };
+    }
+
+    // For text-based files, decode base64 and send as readable text
+    const isTextFile =
+      mime.startsWith("text/") ||
+      mime.endsWith("+xml") ||
+      mime.endsWith("+json") ||
+      mime.includes("json") ||
+      mime.includes("xml") ||
+      mime.includes("javascript") ||
+      mime.includes("typescript") ||
+      mime.includes("yaml") ||
+      mime.includes("x-sh");
+
+    if (isTextFile) {
+      try {
+        // Extract base64 data from data URL if needed
+        const base64Data = part.data.startsWith("data:")
+          ? (part.data.split(",")[1] ?? part.data)
+          : part.data;
+
+        const content = atob(base64Data);
+        return {
+          type: "text",
+          text: `[file: "${label}" type="${mime}"]\n${content}`,
+        };
+      } catch (e) {
+        console.warn("Failed to decode base64 file content", e);
+      }
+    }
+
+    // For non-text binary files, only send metadata (LLM cannot process binary data)
     return {
       type: "text",
-      text: `[file name="${label}" mime="${mime}"]\n${part.data}`,
+      text: `[file: "${label}" type="${mime}"]`,
     };
   }
   return null;
@@ -71,12 +160,14 @@ const combineContentWithAttachments = (
   return userParts;
 };
 
-const toOpenAIContent = (
+const toOpenAIContent = async (
   parts: ThreadMessage["content"],
-): OpenAIContent | undefined => {
-  const mapped = parts
-    .map(mapThreadPartToOpenAI)
-    .filter((p): p is OpenAIContentPart => p !== null);
+): Promise<OpenAIContent | undefined> => {
+  const mappedPromises = parts.map((part) => mapThreadPartToOpenAI(part));
+  const mappedResults = await Promise.all(mappedPromises);
+  const mapped = mappedResults.filter(
+    (p): p is OpenAIContentPart => p !== null,
+  );
 
   if (mapped.length === 0) {
     return undefined;
@@ -90,7 +181,9 @@ const toOpenAIContent = (
   return mapped;
 };
 
-function toOpenAIMessages(messages: ThreadMessage[]): OpenAIMessage[] {
+async function toOpenAIMessages(
+  messages: ThreadMessage[],
+): Promise<OpenAIMessage[]> {
   const result: OpenAIMessage[] = [];
 
   for (const message of messages) {
@@ -99,7 +192,7 @@ function toOpenAIMessages(messages: ThreadMessage[]): OpenAIMessage[] {
     }
 
     const parts = combineContentWithAttachments(message);
-    const content = toOpenAIContent(parts);
+    const content = await toOpenAIContent(parts);
     if (!content) continue;
 
     result.push({
@@ -237,7 +330,7 @@ export function createOpenAICompatibleAdapter({
 }: CreateOpenAICompatibleAdapterOptions = {}): ChatModelAdapter {
   return {
     async *run({ messages, abortSignal, context }) {
-      const payloadMessages = toOpenAIMessages([...messages]);
+      const payloadMessages = await toOpenAIMessages([...messages]);
 
       if (
         typeof context.system === "string" &&
