@@ -1,6 +1,13 @@
 "use client";
 
-import { Download, LogOut, UserRound, X } from "lucide-react";
+import {
+  Code,
+  Download,
+  LayoutDashboard,
+  LogOut,
+  UserRound,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import type { FC } from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -134,6 +141,22 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({ isOpen, onClose }) => {
               {user.email}
             </p>
           </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <a
+              href={`${baseWebUrl}/dashboard`}
+              className="flex items-center gap-2"
+            >
+              <LayoutDashboard className="size-4" />
+              Dashboard
+            </a>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <a href={`${baseWebUrl}/keys`} className="flex items-center gap-2">
+              <Code className="size-4" />
+              API Keys
+            </a>
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="gap-2"
