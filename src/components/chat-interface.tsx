@@ -114,6 +114,7 @@ export function ChatInterface({ models, initialModel }: ChatInterfaceProps) {
   const maxTokens = useChatSettings((state) => state.maxTokens);
   const setModel = useChatSettings((state) => state.setModel);
   const setModels = useModelsStore((state) => state.setModels);
+  const availableModels = useModelsStore((state) => state.models);
   const { chatKey, isAuthenticated } = useChatKey();
 
   useEffect(() => {
@@ -142,6 +143,17 @@ export function ChatInterface({ models, initialModel }: ChatInterfaceProps) {
       async *run(args) {
         const { messages, context, config, ...rest } = args;
 
+        const selectedModel = availableModels.find((m) => m.id === model);
+        const modelProvider =
+          selectedModel?.providers[0] ||
+          model?.split("/")[0]?.trim() ||
+          undefined;
+        const modelIdentity = model
+          ? `You are ${selectedModel?.name || model}, a large language model${
+              modelProvider ? ` from ${modelProvider}` : ""
+            }.`
+          : undefined;
+
         const limitedMessages =
           typeof messagesInContext === "number" &&
           messagesInContext > 0 &&
@@ -150,6 +162,9 @@ export function ChatInterface({ models, initialModel }: ChatInterfaceProps) {
             : messages;
 
         const systemSegments: string[] = [];
+        if (modelIdentity) {
+          systemSegments.push(modelIdentity);
+        }
         if (
           typeof context.system === "string" &&
           context.system.trim().length > 0
@@ -199,7 +214,15 @@ export function ChatInterface({ models, initialModel }: ChatInterfaceProps) {
         }
       },
     }),
-    [baseAdapter, messagesInContext, responseLanguage, temperature, maxTokens],
+    [
+      availableModels,
+      baseAdapter,
+      messagesInContext,
+      model,
+      responseLanguage,
+      temperature,
+      maxTokens,
+    ],
   );
 
   return (
