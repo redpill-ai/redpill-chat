@@ -150,7 +150,7 @@ export function ChatInterface({ models, initialModel }: ChatInterfaceProps) {
           undefined;
         const modelIdentity = model
           ? `You are ${selectedModel?.name || model}, a large language model${
-              modelProvider ? ` from ${modelProvider}` : ""
+              modelProvider ? ` provided by ${modelProvider}` : ""
             }.`
           : undefined;
 
