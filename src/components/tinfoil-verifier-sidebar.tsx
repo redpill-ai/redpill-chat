@@ -9,11 +9,15 @@ import { cn } from "@/lib/utils";
 interface TinfoilVerifierSidebarProps {
   isVisible: boolean;
   onClose: () => void;
+  onVerificationUpdate?: (state: unknown) => void;
+  onVerificationComplete?: (success: boolean) => void;
 }
 
 export const TinfoilVerifierSidebar: FC<TinfoilVerifierSidebarProps> = ({
   isVisible,
   onClose,
+  onVerificationUpdate,
+  onVerificationComplete,
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isReady, setIsReady] = useState(false);
@@ -24,13 +28,23 @@ export const TinfoilVerifierSidebar: FC<TinfoilVerifierSidebarProps> = ({
     try {
       const client = await getTinfoilClient();
       const readyFn = (client as { ready?: () => Promise<unknown> }).ready;
-      await readyFn?.();
+      await readyFn?.call(client);
+    } catch (error) {
+      console.error("Tinfoil client verification failed", error);
+    }
 
+    try {
+      const client = await getTinfoilClient();
       const doc = await (
         client as { getVerificationDocument?: () => Promise<unknown> }
-      ).getVerificationDocument?.();
+      ).getVerificationDocument?.call(client);
       if (doc) {
         setVerificationDocument(doc);
+        onVerificationUpdate?.(doc);
+        const { securityVerified } = doc as { securityVerified?: boolean };
+        if (securityVerified !== undefined) {
+          onVerificationComplete?.(securityVerified);
+        }
         if (isReady && iframeRef.current) {
           iframeRef.current.contentWindow?.postMessage(
             {
@@ -44,7 +58,7 @@ export const TinfoilVerifierSidebar: FC<TinfoilVerifierSidebarProps> = ({
     } catch (error) {
       console.error("Failed to fetch verification document", error);
     }
-  }, [isReady]);
+  }, [isReady, onVerificationComplete, onVerificationUpdate]);
 
   // Handle messages from iframe
   useEffect(() => {
