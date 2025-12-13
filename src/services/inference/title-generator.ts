@@ -16,6 +16,24 @@ export async function generateChatTitle(
       .map((msg) => `${msg.role.toUpperCase()}: ${msg.content.slice(0, 500)}`)
       .join("\n\n");
 
+    const body: Record<string, unknown> = {
+      model: modelName,
+      messages: [
+        { role: "system", content: TITLE_GENERATION_PROMPT },
+        {
+          role: "user",
+          content: `Generate a title for this conversation:\n\n${conversationForTitle}`,
+        },
+      ],
+      stream: false,
+    };
+
+    if (modelName.startsWith("openai")) {
+      body.max_completion_tokens = 150;
+    } else {
+      body.max_tokens = 150;
+    }
+
     const response = await fetch(
       `${env.NEXT_PUBLIC_REDPILL_API_URL}/v1/chat/completions`,
       {
@@ -24,18 +42,7 @@ export async function generateChatTitle(
           "Content-Type": "application/json",
           Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({
-          model: modelName,
-          messages: [
-            { role: "system", content: TITLE_GENERATION_PROMPT },
-            {
-              role: "user",
-              content: `Generate a title for this conversation:\n\n${conversationForTitle}`,
-            },
-          ],
-          stream: false,
-          max_tokens: 150,
-        }),
+        body: JSON.stringify(body),
       },
     );
 
