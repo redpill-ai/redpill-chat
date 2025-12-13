@@ -34,7 +34,7 @@ export async function generateChatTitle(
             },
           ],
           stream: false,
-          max_tokens: 30,
+          max_tokens: 150,
         }),
       },
     );
