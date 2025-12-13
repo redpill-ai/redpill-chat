@@ -432,8 +432,8 @@ const AssistantReasoning: ReasoningMessagePartComponent = ({ text }) => {
     if (
       hasReasoningText &&
       hasTextContent &&
-      thinkingStartTimeRef.current &&
-      !thinkingDuration
+      thinkingStartTimeRef.current !== undefined &&
+      thinkingDuration === undefined
     ) {
       const duration = (Date.now() - thinkingStartTimeRef.current) / 1000;
       setThinkingDuration(duration);
@@ -450,7 +450,9 @@ const AssistantReasoning: ReasoningMessagePartComponent = ({ text }) => {
 
   if (!trimmed) return null;
 
-  const isThinking = Boolean(trimmed) && !thinkingDuration;
+  const isThinking = Boolean(trimmed) && thinkingDuration === undefined;
+  const shouldShowDuration =
+    thinkingDuration !== undefined && thinkingDuration > 0;
 
   return (
     <div className="aui-assistant-reasoning mb-5 w-full rounded-xl border border-border/60 bg-muted/40">
@@ -469,7 +471,7 @@ const AssistantReasoning: ReasoningMessagePartComponent = ({ text }) => {
             <span className="font-semibold">
               {isThinking ? "Thinking" : "Thought"}
             </span>
-            {thinkingDuration && (
+            {shouldShowDuration && thinkingDuration !== undefined && (
               <span className="font-normal opacity-70 ml-1">
                 for {formatDuration(thinkingDuration)}
               </span>

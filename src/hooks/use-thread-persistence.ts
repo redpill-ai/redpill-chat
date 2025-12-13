@@ -109,9 +109,7 @@ export function useThreadPersistence(currentChatId: string | null) {
                 content: msg.content,
               }));
 
-              const generatedTitle = await generateChatTitle(
-                titleMessages,
-              );
+              const generatedTitle = await generateChatTitle(titleMessages);
 
               if (generatedTitle && generatedTitle !== "New Chat") {
                 chat = {
