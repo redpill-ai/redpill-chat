@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -58,6 +59,12 @@ export const SettingSidebar: FC<SettingSidebarProps> = ({
   const setTemperature = useChatSettings((state) => state.setTemperature);
   const maxTokens = useChatSettings((state) => state.maxTokens);
   const setMaxTokens = useChatSettings((state) => state.setMaxTokens);
+  const autoGenerateTitles = useChatSettings(
+    (state) => state.autoGenerateTitles,
+  );
+  const setAutoGenerateTitles = useChatSettings(
+    (state) => state.setAutoGenerateTitles,
+  );
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -203,6 +210,20 @@ export const SettingSidebar: FC<SettingSidebarProps> = ({
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Chat Titles</p>
+                  <p className="text-xs text-muted-foreground">
+                    Automatically name new chats after the first exchange.
+                  </p>
+                </div>
+                <Switch
+                  checked={autoGenerateTitles}
+                  onCheckedChange={setAutoGenerateTitles}
+                  aria-label="Toggle automatic chat titles"
+                />
               </div>
             </CardContent>
           </Card>

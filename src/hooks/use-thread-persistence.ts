@@ -16,6 +16,9 @@ import { indexedDBStorage } from "@/services/storage/indexed-db";
 export function useThreadPersistence(currentChatId: string | null) {
   const messages = useThread((state) => state.messages);
   const model = useChatSettings((state) => state.model);
+  const autoGenerateTitles = useChatSettings(
+    (state) => state.autoGenerateTitles,
+  );
   const { chatKey } = useChatKey();
 
   useEffect(() => {
@@ -95,7 +98,11 @@ export function useThreadPersistence(currentChatId: string | null) {
         if (chatMessages.length > 0) {
           // Auto-generate title for first message if still "New Chat"
           const isFirstMessage = chatMessages.length <= 2; // User + Assistant
-          if (isFirstMessage && chat.title === "New Chat") {
+          if (
+            autoGenerateTitles &&
+            isFirstMessage &&
+            chat.title === "New Chat"
+          ) {
             try {
               const titleMessages = chatMessages.map((msg) => ({
                 role: msg.role,
@@ -136,7 +143,7 @@ export function useThreadPersistence(currentChatId: string | null) {
     }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [messages, currentChatId, model, chatKey]);
+  }, [messages, currentChatId, model, chatKey, autoGenerateTitles]);
 
   return null;
 }

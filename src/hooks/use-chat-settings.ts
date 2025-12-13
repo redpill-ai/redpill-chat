@@ -10,12 +10,14 @@ interface ChatSettingsState {
   model: string;
   temperature: number;
   maxTokens: number;
+  autoGenerateTitles: boolean;
   setTheme: (theme: ThemeOption) => void;
   setMessagesInContext: (count: number) => void;
   setResponseLanguage: (language: string) => void;
   setModel: (model: string) => void;
   setTemperature: (temperature: number) => void;
   setMaxTokens: (maxTokens: number) => void;
+  setAutoGenerateTitles: (enabled: boolean) => void;
 }
 
 const fallbackStorage: Storage = {
@@ -36,6 +38,7 @@ export const useChatSettings = create<ChatSettingsState>()(
       model: "",
       temperature: 1,
       maxTokens: 4096,
+      autoGenerateTitles: true,
       setTheme: (theme) => set({ theme }),
       setMessagesInContext: (count) =>
         set({ messagesInContext: Math.min(Math.max(count, 1), 50) }),
@@ -45,6 +48,7 @@ export const useChatSettings = create<ChatSettingsState>()(
         set({ temperature: Math.min(Math.max(temperature, 0), 2) }),
       setMaxTokens: (maxTokens) =>
         set({ maxTokens: Math.min(Math.max(maxTokens, 1), 8192) }),
+      setAutoGenerateTitles: (enabled) => set({ autoGenerateTitles: enabled }),
     }),
     {
       name: "redpill-chat-settings",
@@ -57,6 +61,7 @@ export const useChatSettings = create<ChatSettingsState>()(
         responseLanguage: state.responseLanguage,
         temperature: state.temperature,
         maxTokens: state.maxTokens,
+        autoGenerateTitles: state.autoGenerateTitles,
       }),
     },
   ),
