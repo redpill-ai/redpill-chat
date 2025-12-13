@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RIGHT_PANEL_WIDTH } from "@/constants";
+import { RIGHT_PANEL_WIDTH, TITLE_GENERATION_MODEL } from "@/constants";
 import type { ThemeOption } from "@/hooks/use-chat-settings";
 import { useChatSettings } from "@/hooks/use-chat-settings";
 import { cn } from "@/lib/utils";
@@ -216,7 +216,11 @@ export const SettingSidebar: FC<SettingSidebarProps> = ({
                 <div className="space-y-1">
                   <p className="text-sm font-medium">Chat Titles</p>
                   <p className="text-xs text-muted-foreground">
-                    Automatically name new chats after the first exchange.
+                    Auto-name new chats with the TEE model{" "}
+                    <span className="font-medium text-foreground">
+                      {TITLE_GENERATION_MODEL}
+                    </span>
+                    .
                   </p>
                 </div>
                 <Switch

@@ -76,6 +76,8 @@ export function getModelProviderIcon(providerName: string): string {
       return getGstaticUrl("https://tinfoil.sh/");
     case "z-ai":
       return getGstaticUrl("https://chat.z.ai/");
+    case "x-ai":
+      return getGstaticUrl("https://x.ai/");
     case "redpill":
       return "/favicon-32x32.png";
     default:

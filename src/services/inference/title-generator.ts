@@ -1,13 +1,10 @@
-import { TITLE_GENERATION_PROMPT } from "@/constants";
+import { TITLE_GENERATION_PROMPT, TITLE_GENERATION_MODEL } from "@/constants";
 import { env } from "@/env";
 
 export async function generateChatTitle(
   messages: Array<{ role: string; content: string }>,
-  modelName?: string,
-  apiKey?: string | null,
 ): Promise<string> {
   if (!messages || messages.length === 0) return "New Chat";
-  if (!modelName || !apiKey) return messages[0].content.slice(0, 30);
 
   try {
     // Take first 4 messages for title generation (to keep context focused)
@@ -16,33 +13,25 @@ export async function generateChatTitle(
       .map((msg) => `${msg.role.toUpperCase()}: ${msg.content.slice(0, 500)}`)
       .join("\n\n");
 
-    const body: Record<string, unknown> = {
-      model: modelName,
-      messages: [
-        { role: "system", content: TITLE_GENERATION_PROMPT },
-        {
-          role: "user",
-          content: `Generate a title for this conversation:\n\n${conversationForTitle}`,
-        },
-      ],
-      stream: false,
-    };
-
-    if (modelName.startsWith("openai")) {
-      body.max_completion_tokens = 150;
-    } else {
-      body.max_tokens = 150;
-    }
-
     const response = await fetch(
       `${env.NEXT_PUBLIC_REDPILL_API_URL}/v1/chat/completions`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          model: TITLE_GENERATION_MODEL,
+          messages: [
+            { role: "system", content: TITLE_GENERATION_PROMPT },
+            {
+              role: "user",
+              content: `Generate a title for this conversation:\n\n${conversationForTitle}`,
+            },
+          ],
+          stream: false,
+          max_tokens: 30,
+        }),
       },
     );
 
